@@ -1,0 +1,103 @@
+<html>
+    <head>
+        <title>This is a test console</title>
+        <style>
+            textarea {
+                width: 1000px;
+                height: 400px;
+            }
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <div>
+            <button id="btnRun">Run</button>
+            <button id="btnSave">Save</button>
+            <button id="btnDebug">Debug</button>
+        </div> <br />
+        <div>
+            <input type="text" id="txtCommand" />
+        </div>
+        <div>
+            <textarea id="txtConsole">
+            </textarea>
+        </div> <br />
+        <div>
+            <textarea id="txtResult">
+            </textarea>
+        </div>
+        <script>
+            var input = document.getElementById("txtConsole");
+            var result = document.getElementById("txtResult");
+            var btnRun = document.getElementById("btnRun");
+            var btnSave = document.getElementById("btnSave");
+            var btnDebug = document.getElementById("btnDebug");
+            var txtCommand = document.getElementById("txtCommand");
+
+            let isDebugStarted = false;
+            btnDebug.onclick = function() {
+                isDebugStarted = true;
+            }
+
+            txtCommand.onkeypress = (k) => {
+                if  (k.key === "Enter" && isDebugStarted) {
+                    let command = txtCommand.value
+                    txtCommand.value = ''
+                    $.ajax({
+                        url: `http://localhost:8080/test/${command}`,
+                        type: "GET",
+                        success: function (response) {
+                            result.value = response
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.log(textStatus, errorThrown);
+                        }
+                    });     
+                }
+            }
+
+            btnSave.onclick = function() {
+                var code = input.value;
+                var dataC = {};
+                dataC.code = code.toString();
+                // var xhttp = new XMLHttpRequest();
+                // xhttp.open("POST", "http://localhost:8080/saveFile", true);
+                // xhttp.setRequestHeader('Content-type', 'text');
+
+                // xhttp.onreadystatechange = function() {//Call a function when the state changes.
+                //     if(xhttp.readyState == 4 && xhttp.status == 200) {
+                //         console.warn(xhttp.responseText);
+                //     }
+                // }
+                // xhttp.send(JSON.parse('{"code": "test"}'))
+                $.ajax({
+                    url: "http://localhost:8080/saveFile",
+                    type: "post",
+                    data: dataC,
+                    success: function (response) {
+                        console.log(response)
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(textStatus, errorThrown);
+                    }
+                });
+            }
+
+            btnRun.onclick = function() {
+                console.log("I clicked btnRun")
+                $.ajax({
+                    url: "http://localhost:8080/run",
+                    type: "GET",
+                    success: function (response) {
+                        result.value = response
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(textStatus, errorThrown);
+                    }
+                });
+            }
+
+            var socket = io();
+        </script>
+    </body>
+</html>
