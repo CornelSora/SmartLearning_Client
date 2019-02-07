@@ -11,6 +11,11 @@
       placeholder="Password"
       v-model="password"
     /><br/>
+    <b-alert
+      :show="error != ''"
+      variant="danger">
+    {{ error }}
+    </b-alert>
     <b-btn
       variant="outline-success"
       @click="login">Connection</b-btn>
@@ -24,19 +29,23 @@ export default {
   data () {
     return {
       email: '',
-      password: ''
+      password: '',
+      error: ''
     }
   },
   methods: {
     async login () {
+      this.error = ''
+      let loader = this.$loading.show()
       try {
-        console.warn(this.email, this.password)
         let user = await this.$firebase
           .auth()
           .signInWithEmailAndPassword(this.email, this.password)
         this.$router.replace('hello')
       } catch (e) {
-        console.warn(e)
+        this.error = e.message
+      } finally {
+        loader.hide()
       }
     }
   }

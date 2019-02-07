@@ -9,8 +9,12 @@ import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import api from './services/api'
+import Loading from 'vue-loading-overlay'
+// Import stylesheet
+import 'vue-loading-overlay/dist/vue-loading.css'
 
 Vue.use(BootstrapVue)
+Vue.use(Loading)
 Vue.config.productionTip = false
 Vue.prototype.$firebase = firebase
 Vue.prototype.$api = api
