@@ -1,5 +1,5 @@
 <template>
-  <b-container>
+  <b-container class="register-container">
     <p>Let's create a new account!</p>
     <b-form-input
       type="text"
@@ -54,9 +54,6 @@
           let loader = this.$loading.show()
           const result = await this.$api.account.register(this.user)
           if (result.ok) {
-            //  this.$tokenStorage.setUserToken(result.result)
-            //  this.$router.go()
-            console.warn("is ok...")
             var resultedUser = result.result
             await this.$firebase
               .auth()
@@ -89,5 +86,7 @@
 </script>
 
 <style>
-
+.register-container {
+  text-align: center;
+}
 </style>

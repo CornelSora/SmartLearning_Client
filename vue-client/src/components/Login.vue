@@ -1,5 +1,5 @@
 <template>
-  <b-container class="test">
+  <b-container class="login-container">
     <h3>Sign in</h3>
     <b-form-input
       type="text"
@@ -53,5 +53,7 @@ export default {
 </script>
 
 <style>
-
+.login-container {
+  text-align: center;
+}
 </style>
