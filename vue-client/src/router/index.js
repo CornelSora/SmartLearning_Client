@@ -12,9 +12,15 @@ const router = new Router({
       redirect: '/'
     },
     {
-      path: '/Hello',
-      name: 'HelloWorld',
-      component: () => import("@/components/HelloWorld"),
+      path: '/Problems',
+      name: 'Problems',
+      component: () => import("@/components/Problems"),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/Problem/:id',
+      name: 'ProblemDetails',
+      component: () => import("@/components/ProblemDetails"),
       meta: { requiresAuth: true }
     },
     {
@@ -31,6 +37,8 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
+  let loader = Vue.$loading.show()
+
   // https://firebase.google.com/docs/auth/admin/verify-id-tokens
   const currentUser = firebase.auth().currentUser
   console.warn(currentUser)
@@ -39,6 +47,7 @@ router.beforeEach((to, from, next) => {
   if (requiresAuth && !currentUser) next('login')
   else if (!requiresAuth && currentUser) next('hello')
   else next()
+  loader.hide()
 })
 
 export default router

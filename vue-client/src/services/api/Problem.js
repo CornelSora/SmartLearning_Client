@@ -10,6 +10,16 @@ class Problem extends Base {
     } finally {
     }
   }
+
+  async getProblem(id) {
+    try {
+      const result = await this.http.get(`/problems/${id}`)
+      return super.ok(result)
+    } catch (e) {
+      return super.error(e)
+    } finally {
+    }
+  }
 }
 
 export default Problem

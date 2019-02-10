@@ -41,7 +41,7 @@ export default {
         let user = await this.$firebase
           .auth()
           .signInWithEmailAndPassword(this.email, this.password)
-        this.$router.replace('hello')
+        this.$router.replace('problems')
       } catch (e) {
         this.error = e.message
       } finally {
