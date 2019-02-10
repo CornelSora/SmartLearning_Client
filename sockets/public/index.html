@@ -42,7 +42,7 @@
             </textarea>
         </div>
         <script>
-            var server = "http://localhost:8080"
+            var server = "http://localhost:8081"
             var editor = ace.edit("txtConsole");
             var next = 0
             var breakpoints = []
@@ -96,13 +96,13 @@
                 result.value = ''
                 isDebugStarted = true;
                 socket.emit('debugStart')
-                for (var row in breakpoints) {
-                    let command = `break ${parseInt(breakpoints[row]) + 1}`
-                    socket.emit('debug', command);
-                }
-                let command = 'run'
-                socket.emit('debug', command);
-                editor.gotoLine((breakpoints[0] + 1), 10, true);
+                // for (var row in breakpoints) {
+                //     let command = `break ${parseInt(breakpoints[row]) + 1}`
+                //     socket.emit('debug', command);
+                // }
+                // let command = 'run'
+                // socket.emit('debug', command);
+                // editor.gotoLine((breakpoints[0] + 1), 10, true);
                 breakpoints.shift()
             }
 
@@ -177,7 +177,7 @@
             }
 
             btnRun.onclick = function() {
-                console.log("I clicked btnRun")
+                // console.log("I clicked btnRun")
                 runClicked = true
                 var code = editor.getValue();
                 var dataC = {};
@@ -194,6 +194,8 @@
                         console.log(textStatus, errorThrown);
                     }
                 });
+                // var code = editor.getValue();
+                // socket.emit("run", code)
             }
         </script>
     </body>
