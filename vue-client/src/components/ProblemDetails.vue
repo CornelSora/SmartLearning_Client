@@ -33,7 +33,6 @@ export default {
       const result = await this.$api.problem.getProblem(this.$route.params.id)
       if (result.ok) {
         this.problem = result.result
-        console.warn(this.problem)
       } else {
         console.warn('something went wrong when I got the problems')
       }

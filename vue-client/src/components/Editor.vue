@@ -18,7 +18,7 @@
         v-model="result"
         @init="resultEditorInit"
         lang="text"
-        theme="chrome"
+        theme="terminal"
         width="100%"
         height="200px"
         :readonly="true"
@@ -31,6 +31,9 @@
 <script>
 import editor from 'vue2-ace-editor'
 import io from 'socket.io-client';
+import brace from 'brace'
+const Range = brace.acequire("ace/range").Range
+
 const socket = io('http://localhost:8081');
 var loader = { hide: () => { console.log("nothing") } }
 
@@ -39,13 +42,18 @@ export default {
     return {
       content: `#include<stdio.h>
 int main() {
-    printf("Something");
+    int x = 10;
+    int y = 100;
+    int z = x + y;
+    z++;
+    printf("Hello world: %d", z);
 }`,
       result: '',
       options: {
         enableBasicAutocompletion: true,
         showGutter: true
-      }
+      },
+      marker: null
     }
   },
   mounted () {
@@ -54,13 +62,18 @@ int main() {
       loader.hide()
     })
     socket.on('debugResult', (debugResult) => {
-      this.result += debugResult + '\n'
       var resultEditor = this.$refs.resultEditor.editor
       var n = resultEditor.getSession().getValue().split("\n").length;
-      resultEditor.focus()
-      resultEditor.gotoLine(n + 1, 0, true)
-      resultEditor.focus()
-      loader.hide()
+      if (debugResult.trim().length != 0) {
+        this.result += (n > 1 ? '\n' : '') + debugResult + '\n'
+      }
+      setTimeout(() => {
+        resultEditor.focus()
+        resultEditor.resize(true);
+        resultEditor.scrollToLine(n + 1, true, true, function () {});
+        resultEditor.gotoLine(n*2, 1, true);
+        loader.hide()
+      }, 500)
     })
   },
   methods: {
@@ -70,7 +83,7 @@ int main() {
       require('brace/mode/c_cpp')    //language
       require('brace/mode/less')
       require('brace/theme/twilight')
-      require('brace/theme/chrome')
+      require('brace/theme/terminal')
       require('brace/snippets/c_cpp') //snippet
       require('brace/ext/searchbox')
       require('brace/ext/spellcheck')
@@ -145,6 +158,21 @@ int main() {
       const lines = resultEditor.getSession().getValue().split("\n")
       const lastCommand = lines[lines.length - 1]
       socket.emit('debug', lastCommand);
+    }
+  },
+  watch: {
+    result: function (n, v) {
+      var lines = n.split("\n")
+      var numbers = lines.filter(x => (x[0] > 0))
+      if (numbers.length > 0) {
+        for (var i = 0; i < numbers.length; i++) {          
+          var editor = this.$refs.editor.editor
+          if (this.marker) {
+            editor.session.removeMarker(this.marker)
+          }
+          this.marker = editor.session.addMarker(new Range(numbers[i][0] - 1, 0, numbers[i][0] - 1, 10), "myMarker", "fullLine");
+        }
+      }
     }
   },
   components: {

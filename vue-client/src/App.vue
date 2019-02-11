@@ -31,4 +31,9 @@ export default {
   border-radius: 20px 0px 0px 20px; 
   box-shadow: 0px 0px 1px 1px red inset; 
 }
+.myMarker {
+  position:absolute;
+  background:rgba(200,0,0,0.5);
+  z-index:20;
+}
 </style>
