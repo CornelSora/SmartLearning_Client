@@ -1,28 +1,28 @@
 <template>
   <div>
     <editor
-        v-model="content"
-        @init="editorInit"
-        lang="c_cpp"
-        theme="twilight"
-        width="100%"
-        height="500px"
-        :options="options"
-        ref="editor"
+        v-model='content'
+        @init='editorInit'
+        lang='c_cpp'
+        theme='twilight'
+        width='100%'
+        height='500px'
+        :options='options'
+        ref='editor'
         >
     </editor>
-    <b-btn @click="onRunEvent">Run</b-btn>
-    <b-btn @click="onCompileEvent">Compile</b-btn>
-    <b-btn @click="onDebugEvent">Debug</b-btn>
+    <b-btn @click='onRunEvent'>Run</b-btn>
+    <b-btn @click='onCompileEvent'>Compile</b-btn>
+    <b-btn @click='onDebugEvent'>Debug</b-btn>
     <editor
-        v-model="result"
-        @init="resultEditorInit"
-        lang="text"
-        theme="terminal"
-        width="100%"
-        height="200px"
-        :readonly="true"
-        ref="resultEditor"
+        v-model='result'
+        @init='resultEditorInit'
+        lang='text'
+        theme='terminal'
+        width='100%'
+        height='200px'
+        :readonly='true'
+        ref='resultEditor'
         >
     </editor>
   </div>
@@ -32,10 +32,10 @@
 import editor from 'vue2-ace-editor'
 import io from 'socket.io-client';
 import brace from 'brace'
-const Range = brace.acequire("ace/range").Range
+const Range = brace.acequire('ace/range').Range
 
 const socket = io('http://localhost:8081');
-var loader = { hide: () => { console.log("nothing") } }
+var loader = { hide: () => { console.log('nothing') } }
 
 export default {
   data () {
@@ -63,9 +63,13 @@ int main() {
     })
     socket.on('debugResult', (debugResult) => {
       var resultEditor = this.$refs.resultEditor.editor
-      var n = resultEditor.getSession().getValue().split("\n").length;
+      var editor = this.$refs.editor.editor
+      if (this.marker) {
+        editor.session.removeMarker(this.marker)
+      }
+      var n = resultEditor.getSession().getValue().split('\n').length;
       if (debugResult.trim().length != 0) {
-        this.result += (n > 1 ? '\n' : '') + debugResult + '\n'
+        this.result += (n > 1 ? '\n' : '') + debugResult.trim() + '\n'
       }
       setTimeout(() => {
         resultEditor.focus()
@@ -73,7 +77,15 @@ int main() {
         resultEditor.scrollToLine(n + 1, true, true, function () {});
         resultEditor.gotoLine(n*2, 1, true);
         loader.hide()
-      }, 500)
+      }, 100)
+    })
+    socket.on('colorLine', (lineNumber) => {
+      var resultEditor = this.$refs.resultEditor.editor
+      var editor = this.$refs.editor.editor
+        if (this.marker) {
+          editor.session.removeMarker(this.marker)
+        }
+        this.marker = editor.session.addMarker(new Range(lineNumber - 1, 0, lineNumber - 1, 10), 'myMarker', 'fullLine');
     })
   },
   methods: {
@@ -92,9 +104,9 @@ int main() {
       this.$refs.editor.editor.renderer.setShowGutter(false)
 
       var editor = this.$refs.editor.editor
-      editor.on("guttermousedown", function(e) {
+      editor.on('guttermousedown', function(e) {
         var target = e.domEvent.target;        
-        if (target.className.indexOf("ace_gutter-cell") == -1) {
+        if (target.className.indexOf('ace_gutter-cell') == -1) {
           return;
         }
         if (!editor.isFocused()) { 
@@ -116,11 +128,11 @@ int main() {
     },
     resultEditorInit () {
       var resultEditor = this.$refs.resultEditor.editor
-      resultEditor.commands.on("exec", function(e) {
+      resultEditor.commands.on('exec', function(e) {
         if (e.command.readOnly)
             return;
         var editableRow = resultEditor.session.getLength() - 1;
-        var deletesLeft = e.command.name == "backspace" || e.command.name == "removewordleft";
+        var deletesLeft = e.command.name == 'backspace' || e.command.name == 'removewordleft';
         var notEditable = resultEditor.selection.getAllRanges().some(function(r) {
           if (deletesLeft && r.start.column == 0 && r.end.column == 0) return true;
           return r.start.row != editableRow || r.end.row != editableRow;
@@ -132,7 +144,7 @@ int main() {
   
       resultEditor.keyBinding.origOnCommandKey = resultEditor.keyBinding.onCommandKey;
       resultEditor.keyBinding.onCommandKey = (e, hashId, keyCode) => {
-        if (e.code == "Enter") {
+        if (e.code == 'Enter') {
           this.sendDebugCommand()
           e.preventDefault()
         }
@@ -140,39 +152,39 @@ int main() {
     },
     onRunEvent () {
       loader = this.$loading.show()
-      this.result = "Running..."
-      socket.emit("run", this.content)
+      this.result = 'Running...'
+      socket.emit('run', this.content)
     },
     onCompileEvent () {
       loader = this.$loading.show()
-      this.result = "Running..."
-      socket.emit("compile", this.content)      
+      this.result = 'Running...'
+      socket.emit('compile', this.content)      
     },
     onDebugEvent () {
       loader = this.$loading.show()
-      this.result = ""
-      socket.emit("debugStart")
+      this.result = ''
+      socket.emit('debugStart')
     },
     sendDebugCommand () {
       var resultEditor = this.$refs.resultEditor.editor      
-      const lines = resultEditor.getSession().getValue().split("\n")
+      const lines = resultEditor.getSession().getValue().split('\n')
       const lastCommand = lines[lines.length - 1]
       socket.emit('debug', lastCommand);
     }
   },
   watch: {
     result: function (n, v) {
-      var lines = n.split("\n")
-      var numbers = lines.filter(x => (x[0] > 0))
-      if (numbers.length > 0) {
-        for (var i = 0; i < numbers.length; i++) {          
-          var editor = this.$refs.editor.editor
-          if (this.marker) {
-            editor.session.removeMarker(this.marker)
-          }
-          this.marker = editor.session.addMarker(new Range(numbers[i][0] - 1, 0, numbers[i][0] - 1, 10), "myMarker", "fullLine");
-        }
-      }
+      // var lines = n.split('\n')
+      // var numbers = lines.filter(x => (x[0] > 0))
+      // if (numbers.length > 0) {
+      //   for (var i = 0; i < numbers.length; i++) {          
+      //     var editor = this.$refs.editor.editor
+      //     if (this.marker) {
+      //       editor.session.removeMarker(this.marker)
+      //     }
+      //     this.marker = editor.session.addMarker(new Range(numbers[i][0] - 1, 0, numbers[i][0] - 1, 10), 'myMarker', 'fullLine');
+      //   }
+      // }
     }
   },
   components: {

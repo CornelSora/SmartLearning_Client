@@ -12,7 +12,6 @@ app.use(bodyParser());
 const debugStarted = {};
 
 io.on('connection', function(socket){
-    console.warn(`socket connected: ${socket.id}`)
     var processRef
     socket.on('disconnect', () => {
         fs.unlink(`${socket.id}.c`, (data, err) => {
@@ -23,18 +22,25 @@ io.on('connection', function(socket){
     socket.on('debugStart', () => {
         let i = 0
         var command = `gdb --quiet ${socket.id}.exe`
-        console.warn(command)
         processRef = cmd.get(command);
-        debugStarted[socket.id] = true
+        debugStarted[socket.id] = true;
         processRef.stdout.on(
             'data',
             function(data) {
-                console.log(data)
+                // console.log(data);
                 if (data.indexOf("exited") > -1) {
-                    debugStarted[socket.id] = false
+                    debugStarted[socket.id] = false;
                 }
                 try {
-                    socket.emit("debugResult", data)
+                    socket.emit("debugResult", data);
+                    console.log(data, data[0])
+                    var lines = data.split('\n')
+                    var numbers = lines.filter(x => (x[0] > 0))
+                    if (numbers.length > 0) {
+                        for (var i = 0; i < numbers.length; i++) {
+                            socket.emit("colorLine", numbers[i][0]);
+                        }
+                    }
                 } catch (e) {
                     console.log(e)
                 }
@@ -43,10 +49,6 @@ io.on('connection', function(socket){
     })
 
     socket.on("debug", function(command) {
-        // if (command === 'next' || command === 'continue') {
-        //     socket.emit("next", true)
-        // }
-        console.log('command is -----------: ' + command)
         processRef.stdin.write(`${command}
         `);
     })
@@ -55,38 +57,27 @@ io.on('connection', function(socket){
         await writeFile(socket.id + ".c", code)
         const processRef = cmd.get(`g++ -g ${socket.id}.c -o ${socket.id}`, function(err, data, stderr) {
             if (stderr) {
-                socket.emit("result", stderr)
+                socket.emit("result", stderr);
             } else {
-                socket.emit("result", "Compilation successful!")
+                socket.emit("result", "Compilation successful!");
             }
-            // fs.unlink(`${socket.id}.c`, (data, err) => {
-            // })
         })
     })
 
     socket.on("run", async (code) => {
-        await writeFile(socket.id + ".c", code)
-        // if (debugStarted[socket.id]) {
-        //     socket.emit("error", "Please stop the debug session")
-        // }
+        await writeFile(socket.id + ".c", code);
         const processRef = cmd.get(`g++ -g ${socket.id}.c -o ${socket.id}`, function(err, data, stderr) {
             if (stderr) {
-                console.log(`-------------error----------------: ${stderr}`)
-                socket.emit("result", stderr)                
+                socket.emit("result", stderr);               
             } else {
                 cmd.get(`${socket.id}.exe`, function(err, data, stderr) {
-                    socket.emit("result", data)
-                    // fs.unlink(`${socket.id}.exe`, (data, err) => {
-                    // })        
+                    socket.emit("result", data);
                 })
             }
-            // fs.unlink(`${socket.id}.c`, (data, err) => {
-            // })
         })
-    });
-    
+    });    
 
-    socket.emit("auth", socket.id)
+    //  socket.emit("auth", socket.id)
 });
 
 app.use(express.static(__dirname + '/public'));
@@ -95,7 +86,7 @@ function writeFile (fileName, code) {
     return new Promise((resolve, reject) => {
         fs.writeFile(fileName, code, function(err) {
             if(err) {
-                reject(err)
+                reject(err);
             }
             console.log("The file was saved!");
             resolve(true);
@@ -104,7 +95,7 @@ function writeFile (fileName, code) {
 }
 
 app.post("/saveFile", async (req, res) => {
-    var result = await writeFile(req.body.id + ".c", req.body.code)
+    var result = await writeFile(req.body.id + ".c", req.body.code);
     if (result) {
         res.send('Files uploaded!');
     }
@@ -114,9 +105,9 @@ app.post("/compile", async (req, res) => {
     await writeFile(req.body.id + ".c", req.body.code)
     const processRef = cmd.get(`g++ -g ${req.body.id}.c -o ${req.body.id}`, function(err, data, stderr) {
         if (stderr) {
-            res.send(stderr)
+            res.send(stderr);
         } else {
-            res.send("Compilation successfull!")
+            res.send("Compilation successfull!");
         }
     })
 });
