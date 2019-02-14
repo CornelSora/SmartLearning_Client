@@ -6,34 +6,35 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http)
 var bodyParser = require("body-parser");
 var fs = require('fs');
+var Compiler = require('./compiler')
 
 app.use(bodyParser());
 
 const debugStarted = {};
 
 io.on('connection', function(socket){
+    var compiler = new Compiler(socket.id)
+
     var processRef
     socket.on('disconnect', () => {
-        fs.unlink(`${socket.id}.c`, (data, err) => {
+        fs.unlink(`${compiler.getFileName()}.c`, (data, err) => {
         })
-        fs.unlink(`${socket.id}.exe`, (data, err) => {
+        fs.unlink(`${compiler.getFileName()}.exe`, (data, err) => {
         })
     })
     socket.on('debugStart', () => {
         let i = 0
-        var command = `gdb --quiet ${socket.id}.exe`
+        var command = `gdb --quiet ${compiler.getFileName()}.exe`
         processRef = cmd.get(command);
         debugStarted[socket.id] = true;
         processRef.stdout.on(
             'data',
             function(data) {
-                // console.log(data);
                 if (data.indexOf("exited") > -1) {
                     debugStarted[socket.id] = false;
                 }
                 try {
                     socket.emit("debugResult", data);
-                    console.log(data, data[0])
                     var lines = data.split('\n')
                     var numbers = lines.filter(x => (x[0] > 0))
                     if (numbers.length > 0) {
@@ -54,27 +55,24 @@ io.on('connection', function(socket){
     })
 
     socket.on("compile", async (code) => {
-        await writeFile(socket.id + ".c", code)
-        const processRef = cmd.get(`g++ -g ${socket.id}.c -o ${socket.id}`, function(err, data, stderr) {
-            if (stderr) {
-                socket.emit("result", stderr);
-            } else {
-                socket.emit("result", "Compilation successful!");
-            }
+        compiler.compile(code)
+        .then(() => {
+            socket.emit("result", "Compilation successful!");
         })
+        .catch ((e) => {
+            socket.emit("result", e.toString());            
+        });
     })
 
-    socket.on("run", async (code) => {
-        await writeFile(socket.id + ".c", code);
-        const processRef = cmd.get(`g++ -g ${socket.id}.c -o ${socket.id}`, function(err, data, stderr) {
-            if (stderr) {
-                socket.emit("result", stderr);               
-            } else {
-                cmd.get(`${socket.id}.exe`, function(err, data, stderr) {
-                    socket.emit("result", data);
-                })
-            }
+    socket.on("run", (code) => {
+        compiler.run(code)
+        .then((data) => {
+            socket.emit("result", data);
         })
+        .catch ((e) => {
+            console.log(e)
+            socket.emit("result", e.toString());
+        });
     });    
 
     //  socket.emit("auth", socket.id)
