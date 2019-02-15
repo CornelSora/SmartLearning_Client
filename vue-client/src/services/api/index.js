@@ -1,12 +1,14 @@
 import axios from 'axios'
 import Account from './Account'
-import Problem from './Problem';
+import Problem from './Problem'
+
+console.warn(process.env)
 
 class Api {
   constructor () {
     if (!this.instance) {
       this.instance = axios.create({
-        baseURL: 'http://localhost:8083/api'
+        baseURL: process.env.API_SERVER
       })
 
       // this.instance.interceptors.request.use(config => {

@@ -20,13 +20,7 @@ Vue.prototype.$firebase = firebase
 Vue.prototype.$api = api
 
   // Initialize Firebase
- const config = {
-  apiKey: "AIzaSyD4kytLYCKlLg97MdSyV43mbDEnB03a160",
-  authDomain: "nodelearning-4b086.firebaseapp.com",
-  databaseURL: "https://nodelearning-4b086.firebaseio.com",
-  projectId: "nodelearning-4b086",
-  messagingSenderId: "674076402937"
-};
+ const config = process.env.FIREBASE_CONFIG;
 firebase.initializeApp(config);
 
 let app;

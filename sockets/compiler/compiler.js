@@ -10,13 +10,18 @@ class Compiler {
     async compile(code) {
         await this.writeFile(this._fileName + ".c", code);
         return new Promise((resolve, reject) => {
-            cmd.get(`g++ -g ${this._fileName}.c -o ${this._fileName}`, function(err, data, stderr) {
-                if (stderr) {
-                    reject(stderr);
-                } else {
-                    resolve("Compilation successful!");
-                }
-            })
+            try {
+                cmd.get(`g++ -g ${this._fileName}.c -o ${this._fileName}`, function(err, data, stderr) {
+                    if (stderr) {
+                        reject(stderr);
+                    } else {
+                        resolve("Compilation successful!");
+                    }
+                })
+            } catch(e) {
+                reject(e)
+            } finally {
+            }
         })
     }
 
@@ -29,13 +34,14 @@ class Compiler {
                 })
             } catch (e) {
                 reject(e);
+            } finally {
             }
         })
     }
 
     writeFile (fileName, code) {
         return new Promise((resolve, reject) => {
-            fs.writeFile(fileName, code, function(err) {
+            fs.writeFile('' + fileName, code, function(err) {
                 if(err) {
                     reject(err);
                 }
@@ -44,8 +50,23 @@ class Compiler {
         })
     }
 
+    removeFiles () {
+        try {
+            fs.unlink(`${this._fileName}.c`, (data, err) => {
+            })
+            fs.unlink(`${this._fileName}.exe`, (data, err) => {
+            })
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     getFileName() {
         return this._fileName;
+    }
+
+    getGDBCommand() {
+        return `gdb --quiet ${this._fileName}.exe`;
     }
 }
 

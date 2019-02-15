@@ -11,9 +11,18 @@
         ref='editor'
         >
     </editor>
-    <b-btn @click='onRunEvent'>Run</b-btn>
-    <b-btn @click='onCompileEvent'>Compile</b-btn>
-    <b-btn @click='onDebugEvent'>Debug</b-btn>
+    <div v-if="!debugMode"> 
+      <b-btn @click='onRunEvent'>Run</b-btn>
+      <b-btn @click='onCompileEvent'>Compile</b-btn>
+      <b-btn @click='onDebugEvent'>Debug</b-btn>
+    </div>
+    <div v-else>
+      <b-btn @click='onDebugStart' :disabled="debugStarted">Start</b-btn>
+      <b-btn @click='onDebugNext'>Next</b-btn>
+      <b-btn @click='onDebugContinue'>Continue</b-btn>
+      <b-btn @click='onDebugInfoLocals'>Info locals</b-btn>
+      <b-btn @click='onDebugStop'>Stop</b-btn>
+    </div>
     <editor
         v-model='result'
         @init='resultEditorInit'
@@ -34,26 +43,23 @@ import io from 'socket.io-client';
 import brace from 'brace'
 const Range = brace.acequire('ace/range').Range
 
-const socket = io('http://localhost:8081');
+const socket = io(process.env.SOCKET_SERVER);
 var loader = { hide: () => { console.log('nothing') } }
-
+var breakpoints = []
 export default {
   data () {
     return {
       content: `#include<stdio.h>
 int main() {
-    int x = 10;
-    int y = 100;
-    int z = x + y;
-    z++;
-    printf("Hello world: %d", z);
 }`,
       result: '',
       options: {
         enableBasicAutocompletion: true,
         showGutter: true
       },
-      marker: null
+      marker: null,
+      debugMode: false,
+      debugStarted: false
     }
   },
   mounted () {
@@ -63,10 +69,6 @@ int main() {
     })
     socket.on('debugResult', (debugResult) => {
       var resultEditor = this.$refs.resultEditor.editor
-      var editor = this.$refs.editor.editor
-      if (this.marker) {
-        editor.session.removeMarker(this.marker)
-      }
       var n = resultEditor.getSession().getValue().split('\n').length;
       if (debugResult.trim().length != 0) {
         this.result += (n > 1 ? '\n' : '') + debugResult.trim() + '\n'
@@ -80,12 +82,16 @@ int main() {
       }, 100)
     })
     socket.on('colorLine', (lineNumber) => {
+      debugger
       var resultEditor = this.$refs.resultEditor.editor
       var editor = this.$refs.editor.editor
         if (this.marker) {
           editor.session.removeMarker(this.marker)
         }
         this.marker = editor.session.addMarker(new Range(lineNumber - 1, 0, lineNumber - 1, 10), 'myMarker', 'fullLine');
+    })
+    socket.on('debugFinished', () => {
+      this.onDebugEnd()
     })
   },
   methods: {
@@ -117,11 +123,12 @@ int main() {
         }
         var row = e.getDocumentPosition().row
         var breakpointsArray = e.editor.session.getBreakpoints()
-        console.warn(breakpointsArray)
         if(!(row in breakpointsArray)) {
           e.editor.session.setBreakpoint(row)
+          breakpoints.push(row)
         } else {
           e.editor.session.clearBreakpoint(row)
+          breakpoints.splice(breakpoints.indexOf(row), 1)
         }
         e.stop()
       });
@@ -129,6 +136,7 @@ int main() {
     resultEditorInit () {
       var resultEditor = this.$refs.resultEditor.editor
       resultEditor.commands.on('exec', function(e) {
+        if (!this.debugMode) return;
         if (e.command.readOnly)
             return;
         var editableRow = resultEditor.session.getLength() - 1;
@@ -145,6 +153,7 @@ int main() {
       resultEditor.keyBinding.origOnCommandKey = resultEditor.keyBinding.onCommandKey;
       resultEditor.keyBinding.onCommandKey = (e, hashId, keyCode) => {
         if (e.code == 'Enter') {
+          if (!this.debugMode) return;
           this.sendDebugCommand()
           e.preventDefault()
         }
@@ -163,28 +172,46 @@ int main() {
     onDebugEvent () {
       loader = this.$loading.show()
       this.result = ''
-      socket.emit('debugStart')
+      this.debugMode = true
+      socket.emit('debugStart', this.content)
     },
-    sendDebugCommand () {
-      var resultEditor = this.$refs.resultEditor.editor      
-      const lines = resultEditor.getSession().getValue().split('\n')
-      const lastCommand = lines[lines.length - 1]
-      socket.emit('debug', lastCommand);
-    }
-  },
-  watch: {
-    result: function (n, v) {
-      // var lines = n.split('\n')
-      // var numbers = lines.filter(x => (x[0] > 0))
-      // if (numbers.length > 0) {
-      //   for (var i = 0; i < numbers.length; i++) {          
-      //     var editor = this.$refs.editor.editor
-      //     if (this.marker) {
-      //       editor.session.removeMarker(this.marker)
-      //     }
-      //     this.marker = editor.session.addMarker(new Range(numbers[i][0] - 1, 0, numbers[i][0] - 1, 10), 'myMarker', 'fullLine');
-      //   }
-      // }
+    sendDebugCommand (command) {
+      if (!command) {
+        // the command is sent from console
+        var resultEditor = this.$refs.resultEditor.editor
+        const lines = resultEditor.getSession().getValue().split('\n')
+        command = lines[lines.length - 1]
+      }
+      socket.emit('debug', command);
+    },
+    onDebugStart () {
+      this.debugStarted = true
+      breakpoints.sort((a, b) => a > b)
+      for (var i = 0; i < breakpoints.length; i++) {
+        let cmd = `break ${breakpoints[i] + 1}`
+        this.sendDebugCommand(cmd)
+      }
+      this.sendDebugCommand('run')
+    },
+    onDebugEnd () {
+      this.debugMode = false
+      this.debugStarted = false
+      var editor = this.$refs.editor.editor
+      if (this.marker) {
+        editor.session.removeMarker(this.marker)
+      }
+    },
+    onDebugNext () {
+      this.sendDebugCommand('next')
+    },
+    onDebugContinue () {
+      this.sendDebugCommand('continue')      
+    },
+    onDebugInfoLocals () {
+      this.sendDebugCommand('info locals')
+    },
+    onDebugStop () {
+      this.sendDebugCommand('Quit')      
     }
   },
   components: {
