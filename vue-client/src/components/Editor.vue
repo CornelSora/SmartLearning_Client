@@ -15,6 +15,7 @@
       <b-btn @click='onRunEvent'>Run</b-btn>
       <b-btn @click='onCompileEvent'>Compile</b-btn>
       <b-btn @click='onDebugEvent'>Debug</b-btn>
+      <b-btn @click='onKillEvent'>Kill</b-btn>
     </div>
     <div v-else>
       <b-btn @click='onDebugStart' :disabled="debugStarted">Start</b-btn>
@@ -136,7 +137,7 @@ int main() {
     resultEditorInit () {
       var resultEditor = this.$refs.resultEditor.editor
       resultEditor.commands.on('exec', function(e) {
-        if (!this.debugMode) return;
+        if (this.debugMode) return;
         if (e.command.readOnly)
             return;
         var editableRow = resultEditor.session.getLength() - 1;
@@ -175,6 +176,9 @@ int main() {
       this.debugMode = true
       socket.emit('debugStart', this.content)
     },
+    onKillEvent () {
+      socket.emit('killProcess')
+    },
     sendDebugCommand (command) {
       if (!command) {
         // the command is sent from console
@@ -211,6 +215,7 @@ int main() {
       this.sendDebugCommand('info locals')
     },
     onDebugStop () {
+      this.debugMode = false
       this.sendDebugCommand('Quit')      
     }
   },

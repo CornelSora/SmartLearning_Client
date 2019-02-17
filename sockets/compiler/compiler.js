@@ -29,7 +29,21 @@ class Compiler {
         return new Promise(async (resolve, reject) => {
             try {
                 await this.compile(code);
-                cmd.get(`${this._fileName}.exe`, function(err, data, stderr) {
+                cmd.get(`${this._fileName}.exe timeout /t 1`, function(err, data, stderr) {
+                    console.log('--------------------------')
+                    resolve(data)
+                })
+            } catch (e) {
+                reject(e);
+            } finally {
+            }
+        })
+    }
+
+    async killProcess() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                cmd.get(`Taskkill /IM ${this._fileName}.exe /F`, function(err, data, stderr) {
                     resolve(data)
                 })
             } catch (e) {

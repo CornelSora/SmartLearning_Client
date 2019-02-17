@@ -78,7 +78,18 @@ io.on('connection', function(socket){
             console.log(e)
             socket.emit("result", e.toString());
         });
-    });    
+    });
+
+    socket.on("killProcess", () => {
+        console.log("I will kill it")
+        compiler.killProcess()
+        .then((data) => {
+            socket.emit("result", data);
+        })
+        .catch ((e) => {
+            socket.emit("result", e.toString());
+        });
+    })
 
     //  socket.emit("auth", socket.id)
 });
