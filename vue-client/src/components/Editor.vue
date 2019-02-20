@@ -12,6 +12,7 @@
         >
     </editor>
     <div v-if="!debugMode"> 
+      <b-btn @click='onSaveEvent'>Save</b-btn>
       <b-btn @click='onRunEvent'>Run</b-btn>
       <b-btn @click='onCompileEvent'>Compile</b-btn>
       <b-btn @click='onDebugEvent'>Debug</b-btn>
@@ -50,9 +51,6 @@ var breakpoints = []
 export default {
   data () {
     return {
-      content: `#include<stdio.h>
-int main() {
-}`,
       result: '',
       options: {
         enableBasicAutocompletion: true,
@@ -214,6 +212,21 @@ int main() {
     onDebugInfoLocals () {
       this.sendDebugCommand('info locals')
     },
+    async onSaveEvent () {
+      let loader = this.$loading.show()
+      try {
+        console.log(this.content.indexOf('\n'))
+        //  const contentToSend = this.content.replace('\n', '\\n')
+        let contentToSend = this.content.split('\n').join('\\n')
+        contentToSend = contentToSend.split('"').join('\\\"')
+        await this.$api.problem.saveProblemSolution(this.problemID, this.$userID, `${contentToSend}`)
+        this.result = "File saved"
+      } catch (e) {
+        console.warn(e)
+      } finally {
+        loader.hide()
+      }
+    },
     onDebugStop () {
       this.debugMode = false
       this.sendDebugCommand('Quit')      
@@ -221,6 +234,19 @@ int main() {
   },
   components: {
     editor
+  },
+  props: {
+    // to do: find a better way to send this
+    content: {
+      type: String,
+      default: 'Write your code here',
+      required: false
+    },
+    problemID: {
+      type: String,
+      default: '',
+      required: true
+    }
   }
 }
 </script>

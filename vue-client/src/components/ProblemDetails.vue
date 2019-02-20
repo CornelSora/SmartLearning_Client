@@ -12,8 +12,11 @@
                 </pre>
             </b-media>
         </b-tab>
-        <b-tab title="Editor" >
-            <EditorComponent />
+        <b-tab title="Editor">
+            <EditorComponent
+              v-bind:content="this.problem.solution"
+              :problemID="problemID"
+            />
         </b-tab>
     </b-tabs>
 </template>
@@ -24,13 +27,15 @@ export default {
   name: 'problemDetails',
   data () {
     return {
-      problem: {}
+      problem: {},
+      solution: '',
+      problemID: this.$route.params.id
     }
   },
   async mounted () {
     let loader = this.$loading.show()
     try {
-      const result = await this.$api.problem.getProblem(this.$route.params.id)
+      const result = await this.$api.problem.getProblem(this.problemID, this.$userID)
       if (result.ok) {
         this.problem = result.result
       } else {

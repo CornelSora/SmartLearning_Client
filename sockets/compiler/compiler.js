@@ -8,6 +8,7 @@ class Compiler {
     }
 
     async compile(code) {
+        console.log(code)
         await this.writeFile(this._fileName + ".c", code);
         return new Promise((resolve, reject) => {
             try {
@@ -30,7 +31,6 @@ class Compiler {
             try {
                 await this.compile(code);
                 cmd.get(`${this._fileName}.exe timeout /t 1`, function(err, data, stderr) {
-                    console.log('--------------------------')
                     resolve(data)
                 })
             } catch (e) {

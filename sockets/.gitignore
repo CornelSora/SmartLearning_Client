@@ -33,3 +33,7 @@ coverage
 
 # Vim swp files
 *.swp
+
+#exe
+.exe
+.c
