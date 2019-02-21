@@ -11,7 +11,7 @@
         ref='editor'
         >
     </editor>
-    <div v-if="!debugMode"> 
+    <div v-if="!debugMode">
       <b-btn @click='onSaveEvent'>Save</b-btn>
       <b-btn @click='onRunEvent'>Run</b-btn>
       <b-btn @click='onCompileEvent'>Compile</b-btn>
@@ -58,7 +58,9 @@ export default {
       },
       marker: null,
       debugMode: false,
-      debugStarted: false
+      debugStarted: false,
+      content: 'Here write',
+      problemID: this.$route.params.id
     }
   },
   mounted () {
@@ -92,11 +94,12 @@ export default {
     socket.on('debugFinished', () => {
       this.onDebugEnd()
     })
+    this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
   },
   methods: {
     editorInit () {
       require('brace/ext/language_tools') //language extension prerequsite...
-      require('brace/mode/html')                
+      require('brace/mode/html')
       require('brace/mode/c_cpp')    //language
       require('brace/mode/less')
       require('brace/theme/twilight')
@@ -110,11 +113,11 @@ export default {
 
       var editor = this.$refs.editor.editor
       editor.on('guttermousedown', function(e) {
-        var target = e.domEvent.target;        
+        var target = e.domEvent.target;
         if (target.className.indexOf('ace_gutter-cell') == -1) {
           return;
         }
-        if (!editor.isFocused()) { 
+        if (!editor.isFocused()) {
           return;
         }
         if (e.clientX > 25 + target.getBoundingClientRect().left) {
@@ -148,7 +151,7 @@ export default {
           e.preventDefault();
         }
       });
-  
+
       resultEditor.keyBinding.origOnCommandKey = resultEditor.keyBinding.onCommandKey;
       resultEditor.keyBinding.onCommandKey = (e, hashId, keyCode) => {
         if (e.code == 'Enter') {
@@ -166,7 +169,7 @@ export default {
     onCompileEvent () {
       loader = this.$loading.show()
       this.result = 'Running...'
-      socket.emit('compile', this.content)      
+      socket.emit('compile', this.content)
     },
     onDebugEvent () {
       loader = this.$loading.show()
@@ -207,7 +210,7 @@ export default {
       this.sendDebugCommand('next')
     },
     onDebugContinue () {
-      this.sendDebugCommand('continue')      
+      this.sendDebugCommand('continue')
     },
     onDebugInfoLocals () {
       this.sendDebugCommand('info locals')
@@ -229,25 +232,25 @@ export default {
     },
     onDebugStop () {
       this.debugMode = false
-      this.sendDebugCommand('Quit')      
+      this.sendDebugCommand('Quit')
     }
   },
   components: {
     editor
-  },
-  props: {
-    // to do: find a better way to send this
-    content: {
-      type: String,
-      default: 'Write your code here',
-      required: false
-    },
-    problemID: {
-      type: String,
-      default: '',
-      required: true
-    }
   }
+  // props: {
+  //   // to do: find a better way to send this
+  //   content: {
+  //     type: String,
+  //     default: 'Write your code here',
+  //     required: false
+  //   },
+  //   problemID: {
+  //     type: String,
+  //     default: '',
+  //     required: true
+  //   }
+  // }
 }
 </script>
 

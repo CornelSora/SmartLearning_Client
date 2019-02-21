@@ -12,11 +12,8 @@
                 </pre>
             </b-media>
         </b-tab>
-        <b-tab title="Editor">
-            <EditorComponent
-              v-bind:content="this.problem.solution"
-              :problemID="problemID"
-            />
+        <b-tab title="Editor" v-if="this.$api.problem.getUserSolution()">
+            <EditorComponent />
         </b-tab>
     </b-tabs>
 </template>
