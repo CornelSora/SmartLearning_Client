@@ -1,39 +1,13 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import firebase from 'firebase/app'
+import routes from './routes'
 import 'firebase/auth'
 
 Vue.use(Router)
 
 const router = new Router({
-  routes: [
-    {
-      path: '*',
-      redirect: '/'
-    },
-    {
-      path: '/Problems',
-      name: 'Problems',
-      component: () => import("@/components/Problems"),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/Problem/:id',
-      name: 'ProblemDetails',
-      component: () => import("@/components/ProblemDetails"),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/',
-      name: 'Login',
-      component: () => import("@/components/Login")
-    },
-    {
-      path: '/register',
-      name: 'SignUp',
-      component: () => import("@/components/SignUp")
-    }
-  ]
+  routes: routes
 })
 
 router.beforeEach((to, from, next) => {
@@ -41,7 +15,7 @@ router.beforeEach((to, from, next) => {
 
   // https://firebase.google.com/docs/auth/admin/verify-id-tokens
   const currentUser = firebase.auth().currentUser
-  console.warn(currentUser)
+  console.warn(currentUser.uid)
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
   if (requiresAuth && !currentUser) next('login')
