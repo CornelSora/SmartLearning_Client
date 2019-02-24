@@ -35,9 +35,5 @@ coverage
 *.swp
 
 #exe
-<<<<<<< HEAD
-.exe
-=======
 .exe
 .c
->>>>>>> fc15d97aa21be5aa465a4e64bd469c40868830ec
