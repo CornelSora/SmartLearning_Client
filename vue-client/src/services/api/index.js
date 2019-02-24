@@ -2,8 +2,6 @@ import axios from 'axios'
 import Account from './Account'
 import Problem from './Problem'
 
-console.warn(process.env)
-
 class Api {
   constructor () {
     if (!this.instance) {

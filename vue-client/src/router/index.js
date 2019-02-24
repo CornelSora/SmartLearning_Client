@@ -15,7 +15,6 @@ router.beforeEach((to, from, next) => {
 
   // https://firebase.google.com/docs/auth/admin/verify-id-tokens
   const currentUser = firebase.auth().currentUser
-  console.warn(currentUser.uid)
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
   if (requiresAuth && !currentUser) next('login')

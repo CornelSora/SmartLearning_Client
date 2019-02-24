@@ -36,6 +36,7 @@
         ref='resultEditor'
         >
     </editor>
+    <a href="/Problems">Go to problems</a>
   </div>
 </template>
 

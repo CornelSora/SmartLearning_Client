@@ -25,7 +25,7 @@ firebase.initializeApp(config);
 
 let app;
 firebase.auth().onAuthStateChanged((user) => {
-  Vue.prototype.$userID = user.uid
+  Vue.prototype.$userID = user ? user.uid: ''
   if (!app) {
     app = new Vue({
       el: '#app',
