@@ -20,8 +20,11 @@ Vue.prototype.$firebase = firebase
 Vue.prototype.$api = api
 
   // Initialize Firebase
- const config = process.env.FIREBASE_CONFIG;
+const config = process.env.FIREBASE_CONFIG;
 firebase.initializeApp(config);
+
+const isOnline = process.env.IS_ONLINE;
+Vue.prototype.$isOnline = isOnline;
 
 let app;
 firebase.auth().onAuthStateChanged((user) => {

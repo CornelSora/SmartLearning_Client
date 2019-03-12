@@ -120,6 +120,7 @@ export default {
     }
   },
   async mounted () {
+    if (!this.isOnline) return
     let loader = this.$loading.show()
     try {
       const result = await this.$api.problem.getAllProblems()

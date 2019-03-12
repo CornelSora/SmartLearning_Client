@@ -1,9 +1,13 @@
 <template>
   <div>
+    <b-select v-model="language">
+      <option>python</option>
+      <option>c_cpp</option>
+    </b-select>
     <editor
         v-model='content'
         @init='editorInit'
-        lang='c_cpp'
+        :lang='language'
         theme='twilight'
         width='100%'
         height='500px'
@@ -14,7 +18,7 @@
     <div v-if="!debugMode">
       <b-btn @click='onSaveEvent'>Save</b-btn>
       <b-btn @click='onRunEvent'>Run</b-btn>
-      <b-btn @click='onCompileEvent'>Compile</b-btn>
+      <b-btn @click='onCompileEvent' v-if="language !== 'python'">Compile</b-btn>
       <b-btn @click='onDebugEvent'>Debug</b-btn>
       <b-btn @click='onKillEvent'>Kill</b-btn>
     </div>
@@ -36,7 +40,6 @@
         ref='resultEditor'
         >
     </editor>
-    <a href="/Problems">Go to problems</a>
   </div>
 </template>
 
@@ -61,7 +64,8 @@ export default {
       debugMode: false,
       debugStarted: false,
       content: 'Here write',
-      problemID: this.$route.params.id
+      problemID: this.$route.params.id,
+      language: 'c_cpp'
     }
   },
   mounted () {
@@ -84,7 +88,6 @@ export default {
       }, 100)
     })
     socket.on('colorLine', (lineNumber) => {
-      debugger
       var resultEditor = this.$refs.resultEditor.editor
       var editor = this.$refs.editor.editor
         if (this.marker) {
@@ -102,6 +105,7 @@ export default {
       require('brace/ext/language_tools') //language extension prerequsite...
       require('brace/mode/html')
       require('brace/mode/c_cpp')    //language
+      require('brace/mode/python')    //language
       require('brace/mode/less')
       require('brace/theme/twilight')
       require('brace/theme/terminal')
@@ -165,18 +169,19 @@ export default {
     onRunEvent () {
       loader = this.$loading.show()
       this.result = 'Running...'
-      socket.emit('run', this.content)
+      socket.emit('run', { code: this.content, language: this.language })
     },
     onCompileEvent () {
+      console.warn(this.language)
       loader = this.$loading.show()
       this.result = 'Running...'
-      socket.emit('compile', this.content)
+      socket.emit('compile', { code: this.content, language: this.language })
     },
     onDebugEvent () {
       loader = this.$loading.show()
       this.result = ''
       this.debugMode = true
-      socket.emit('debugStart', this.content)
+      socket.emit('debugStart', { code: this.content, language: this.language })
     },
     onKillEvent () {
       socket.emit('killProcess')
@@ -214,12 +219,15 @@ export default {
       this.sendDebugCommand('continue')
     },
     onDebugInfoLocals () {
-      this.sendDebugCommand('info locals')
+      if (this.language == 'c_cpp') {
+        this.sendDebugCommand('info locals')
+      } else {
+        this.sendDebugCommand('locals()')
+      }
     },
     async onSaveEvent () {
       let loader = this.$loading.show()
       try {
-        console.log(this.content.indexOf('\n'))
         //  const contentToSend = this.content.replace('\n', '\\n')
         let contentToSend = this.content.split('\n').join('\\n')
         contentToSend = contentToSend.split('"').join('\\\"')
@@ -233,25 +241,17 @@ export default {
     },
     onDebugStop () {
       this.debugMode = false
-      this.sendDebugCommand('Quit')
+      if (this.language == 'c_cpp') {
+        this.sendDebugCommand('exit')
+      } else {
+        this.sendDebugCommand('exit()')
+        this.onDebugEnd()
+      }
     }
   },
   components: {
     editor
   }
-  // props: {
-  //   // to do: find a better way to send this
-  //   content: {
-  //     type: String,
-  //     default: 'Write your code here',
-  //     required: false
-  //   },
-  //   problemID: {
-  //     type: String,
-  //     default: '',
-  //     required: true
-  //   }
-  // }
 }
 </script>
 

@@ -4,27 +4,14 @@ const prodEnv = require('./prod.env')
 
 module.exports = merge(prodEnv, {
   NODE_ENV: '"development"',
-  SOCKET_SERVER: '"https://secureapp-cornelsora.c9users.io/"',
-  API_SERVER: '"https://javascriptcore-cornelsora.c9users.io/api"',
+  SOCKET_SERVER: '"http://localhost:8081"',
+  API_SERVER: '"http://localhost:8083/api"',
   FIREBASE_CONFIG: `{
     apiKey: "AIzaSyD4kytLYCKlLg97MdSyV43mbDEnB03a160",
     authDomain: "nodelearning-4b086.firebaseapp.com",
     databaseURL: "https://nodelearning-4b086.firebaseio.com",
     projectId: "nodelearning-4b086",
     messagingSenderId: "674076402937"
-  }`
+  }`,
+  IS_ONLINE: false
 })
-
-
-// module.exports = merge(prodEnv, {
-//   NODE_ENV: '"development"',
-//   SOCKET_SERVER: '"http://localhost:8081"',
-//   API_SERVER: '"http://localhost:8083/api"',
-//   FIREBASE_CONFIG: `{
-//     apiKey: "AIzaSyD4kytLYCKlLg97MdSyV43mbDEnB03a160",
-//     authDomain: "nodelearning-4b086.firebaseapp.com",
-//     databaseURL: "https://nodelearning-4b086.firebaseio.com",
-//     projectId: "nodelearning-4b086",
-//     messagingSenderId: "674076402937"
-//   }`
-// })

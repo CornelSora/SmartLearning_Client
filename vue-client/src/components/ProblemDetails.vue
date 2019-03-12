@@ -12,7 +12,7 @@
                 </pre>
             </b-media>
         </b-tab>
-        <b-tab title="Editor" v-if="this.$api.problem.getUserSolution()">
+        <b-tab title="Editor" v-if="!this.isOnline || this.$api.problem.getUserSolution()">
             <EditorComponent />
         </b-tab>
     </b-tabs>
@@ -30,6 +30,7 @@ export default {
     }
   },
   async mounted () {
+    if (!this.isOnline) return
     let loader = this.$loading.show()
     try {
       const result = await this.$api.problem.getProblem(this.problemID, this.$userID)

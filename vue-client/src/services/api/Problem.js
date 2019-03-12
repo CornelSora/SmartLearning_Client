@@ -3,9 +3,11 @@ import Base from './Base'
 class Problem extends Base {
   async getAllProblems () {
     try {
+      debugger;
       const result = await this.http.get('/problems')
       return super.ok(result)
     } catch (e) {
+      debugger;
       return super.error(e)
     } finally {
     }

@@ -19,8 +19,8 @@ io.on('connection', function(socket){
     socket.on('debugStart', async (code) => {
         let i = 0
         try {
-            await compiler.run(code)
-            var command = compiler.getGDBCommand()
+            await compiler.run(code.code, code.language)
+            var command = compiler.getGDBCommand(code.language)
             processRef = cmd.get(command);
             processRef.stdout.on(
                 'data',
@@ -31,13 +31,8 @@ io.on('connection', function(socket){
                     }
                     try {
                         socket.emit("debugResult", data);
-                        var lines = data.split('\n')
-                        var numbers = lines.filter(x => (x[0] > 0))
-                        if (numbers.length > 0) {
-                            for (var i = 0; i < numbers.length; i++) {
-                                socket.emit("colorLine", numbers[i][0]);
-                            }
-                        }
+                        var lineToColor = compiler.getGDBLine(data, code.code, code.language);
+                        socket.emit("colorLine", lineToColor);
                     } catch (e) {
                         console.log(e)
                     }
@@ -57,8 +52,8 @@ io.on('connection', function(socket){
         }
     })
 
-    socket.on("compile", async (code) => {
-        compiler.compile(code)
+    socket.on("compile", async (command) => {
+        compiler.compile(command.code, command.language)
         .then(() => {
             socket.emit("result", "Compilation successful!");
             compiler.removeFiles();
@@ -68,8 +63,19 @@ io.on('connection', function(socket){
         });
     })
 
-    socket.on("run", (code) => {
-        compiler.run(code)
+    // socket.on("compile", async (code, language) => {
+    //     compiler.compile(code, language)
+    //     .then(() => {
+    //         socket.emit("result", "Compilation successful!");
+    //         compiler.removeFiles();
+    //     })
+    //     .catch ((e) => {
+    //         socket.emit("result", e.toString());            
+    //     });
+    // })
+
+    socket.on("run", (command) => {
+        compiler.run(command.code, command.language)
         .then((data) => {
             socket.emit("result", data);
             compiler.removeFiles();

@@ -11,10 +11,13 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
+  debugger
   let loader = Vue.$loading.show()
 
   // https://firebase.google.com/docs/auth/admin/verify-id-tokens
   const currentUser = firebase.auth().currentUser
+  console.log(currentUser)
+
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
   if (requiresAuth && !currentUser) next('login')
