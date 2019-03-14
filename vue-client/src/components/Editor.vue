@@ -1,8 +1,8 @@
 <template>
   <div>
     <b-select v-model="language">
-      <option>python</option>
-      <option>c_cpp</option>
+      <option>{{this.languages.python}}</option>
+      <option>{{this.languages.c_cpp}}</option>
     </b-select>
     <editor
         v-model='content'
@@ -18,7 +18,7 @@
     <div v-if="!debugMode">
       <b-btn @click='onSaveEvent'>Save</b-btn>
       <b-btn @click='onRunEvent'>Run</b-btn>
-      <b-btn @click='onCompileEvent' v-if="language !== 'python'">Compile</b-btn>
+      <b-btn @click='onCompileEvent' v-if="language !== this.languages.python">Compile</b-btn>
       <b-btn @click='onDebugEvent'>Debug</b-btn>
       <b-btn @click='onKillEvent'>Kill</b-btn>
     </div>
@@ -52,6 +52,8 @@ const Range = brace.acequire('ace/range').Range
 const socket = io(process.env.SOCKET_SERVER);
 var loader = { hide: () => { console.log('nothing') } }
 var breakpoints = []
+var breakpointsSent = []
+
 export default {
   data () {
     return {
@@ -65,7 +67,11 @@ export default {
       debugStarted: false,
       content: 'Here write',
       problemID: this.$route.params.id,
-      language: 'c_cpp'
+      languages: {
+        c_cpp: 'c_cpp',
+        python: 'python'
+      },
+      language: 'c_cpp',
     }
   },
   mounted () {
@@ -186,6 +192,16 @@ export default {
     onKillEvent () {
       socket.emit('killProcess')
     },
+    sendBreakpoints () {
+      breakpoints.sort((a, b) => a > b)
+      for (var i = 0; i < breakpoints.length; i++) {
+        if (breakpointsSent.indexOf(breakpoints[i]) == -1) {
+          let cmd = `break ${breakpoints[i] + 1}`
+          this.sendDebugCommand(cmd)
+          breakpointsSent.push(breakpoints[i])
+        }
+      }
+    },
     sendDebugCommand (command) {
       if (!command) {
         // the command is sent from console
@@ -196,12 +212,9 @@ export default {
       socket.emit('debug', command);
     },
     onDebugStart () {
+      breakpointsSent = []
       this.debugStarted = true
-      breakpoints.sort((a, b) => a > b)
-      for (var i = 0; i < breakpoints.length; i++) {
-        let cmd = `break ${breakpoints[i] + 1}`
-        this.sendDebugCommand(cmd)
-      }
+      this.sendBreakpoints()
       this.sendDebugCommand('run')
     },
     onDebugEnd () {
@@ -213,15 +226,17 @@ export default {
       }
     },
     onDebugNext () {
+      this.sendBreakpoints()
       this.sendDebugCommand('next')
     },
     onDebugContinue () {
+      this.sendBreakpoints()
       this.sendDebugCommand('continue')
     },
     onDebugInfoLocals () {
-      if (this.language == 'c_cpp') {
+      if (this.language == this.languages.c_cpp) {
         this.sendDebugCommand('info locals')
-      } else {
+      } else if (this.language == this.languages.python) {
         this.sendDebugCommand('locals()')
       }
     },
@@ -241,9 +256,9 @@ export default {
     },
     onDebugStop () {
       this.debugMode = false
-      if (this.language == 'c_cpp') {
+      if (this.language == this.languages.c_cpp) {
         this.sendDebugCommand('exit')
-      } else {
+      } else if (this.language == this.languages.python) {
         this.sendDebugCommand('exit()')
         this.onDebugEnd()
       }

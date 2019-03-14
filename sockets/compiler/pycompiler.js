@@ -81,14 +81,14 @@ class PyCompiler {
     }
 
     removeFiles () {
-        // try {
-        //     fs.unlink(`${this._fileName}.py`, (data, err) => {
-        //     })
-        //     fs.unlink(`${this._fileName}.exe`, (data, err) => {
-        //     })
-        // } catch (e) {
-        //     console.log(e)
-        // }
+        try {
+            fs.unlink(`${this._fileName}.py`, (data, err) => {
+            })
+            fs.unlink(`${this._fileName}.exe`, (data, err) => {
+            })
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     getFileName() {

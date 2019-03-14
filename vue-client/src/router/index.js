@@ -11,7 +11,6 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
-  debugger
   let loader = Vue.$loading.show()
 
   // https://firebase.google.com/docs/auth/admin/verify-id-tokens

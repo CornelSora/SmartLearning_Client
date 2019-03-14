@@ -40,10 +40,10 @@ class CCompiler {
 
     getGDBLine(data) {
         var lines = data.split('\n')
-        var numbers = lines.filter(x => (x[0] > 0))
+        var numbers = lines.filter(x => x[0] && x[1] && x[2] && (x[0].concat(x[1]).concat(x[2]) > 0))
         if (numbers.length > 0) {
             for (var i = 0; i < numbers.length; i++) {
-                return numbers[i][0];
+                return parseInt(numbers[i][0].concat(numbers[i][1]).concat(numbers[i][2]).trim());
             }
         }
     }
@@ -73,14 +73,14 @@ class CCompiler {
     }
 
     removeFiles () {
-        // try {
-        //     fs.unlink(`${this._fileName}.c`, (data, err) => {
-        //     })
-        //     fs.unlink(`${this._fileName}.exe`, (data, err) => {
-        //     })
-        // } catch (e) {
-        //     console.log(e)
-        // }
+        try {
+            fs.unlink(`${this._fileName}.c`, (data, err) => {
+            })
+            fs.unlink(`${this._fileName}.exe`, (data, err) => {
+            })
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     getFileName() {

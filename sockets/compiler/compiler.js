@@ -60,14 +60,8 @@ class Compiler {
     }
 
     removeFiles () {
-        // try {
-        //     fs.unlink(`${this._fileName}.c`, (data, err) => {
-        //     })
-        //     fs.unlink(`${this._fileName}.exe`, (data, err) => {
-        //     })
-        // } catch (e) {
-        //     console.log(e)
-        // }
+        this.cCompiler.removeFiles()
+        this.pCompiler.removeFiles()
     }
 
     getGDBLine(data, code, language) {
