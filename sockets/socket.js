@@ -53,14 +53,14 @@ io.on('connection', function(socket){
     })
 
     socket.on("compile", async (command) => {
-        compiler.compile(command.code, command.language)
-        .then(() => {
+        try {
+            await compiler.compile(command.code, command.language)
             socket.emit("result", "Compilation successful!");
-            compiler.removeFiles();
-        })
-        .catch ((e) => {
+        } catch (e) {
             socket.emit("result", e.toString());            
-        });
+        } finally {
+            compiler.removeFiles();
+        }
     })
 
     // socket.on("compile", async (code, language) => {
@@ -74,16 +74,15 @@ io.on('connection', function(socket){
     //     });
     // })
 
-    socket.on("run", (command) => {
-        compiler.run(command.code, command.language)
-        .then((data) => {
+    socket.on("run", async (command) => {
+        try {
+            const data = await compiler.run(command.code, command.language)
             socket.emit("result", data);
-            compiler.removeFiles();
-        })
-        .catch ((e) => {
-            console.log(e)
+        } catch (e) {
             socket.emit("result", e.toString());
-        });
+        } finally {
+            compiler.removeFiles();
+        }
     });
 
     socket.on("killProcess", () => {

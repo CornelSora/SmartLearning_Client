@@ -32,6 +32,16 @@ class Problem extends Base {
     }
   }
 
+  async addProblem(problem) {
+    try {
+      const result = await this.http.post('/problems', problem)
+      return super.ok(result)
+    } catch (e) {
+      return super.error(e)
+    } finally {
+    }
+  }
+
   async saveProblemSolution(problemID, userID, solution) {
     try {
       var request = {
@@ -39,7 +49,6 @@ class Problem extends Base {
         "userID": userID.toString(),
         "solution": solution
       }
-      console.log(request)
       const result = await this.http.post('/solutions', request)
       return super.ok(result)
     } catch (e) {

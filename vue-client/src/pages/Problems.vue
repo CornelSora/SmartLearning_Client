@@ -1,5 +1,6 @@
 <template>
   <div>
+    <b-btn @click="addProblem" class="btnLogout" variant="primary">Add problem</b-btn>
     <b-btn @click="logout" class="btnLogout" variant="primary">Logout</b-btn>
     <center>
       <h2>List of problems</h2>
@@ -159,7 +160,10 @@ export default {
       this.currentPage = 1
     },
     info(item, index, target) {
-      this.$router.push(`problem/${item.UID}`)
+      this.$router.push(`problems/${item.UID}`)
+    },
+    addProblem() {
+      this.$router.push('AddProblem')
     }
   }
 }

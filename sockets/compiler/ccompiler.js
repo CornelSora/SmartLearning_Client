@@ -38,6 +38,34 @@ class CCompiler {
         })
     }
 
+    async test(filename, code = '', functionDetails) {
+        if (!code) {
+            code = await this.readFile(filename + '.c');
+        }
+        code = code.substring(0, code.indexOf('main') - 5);
+        var newFilename = filename + '-test.c';
+        await this.writeFile(newFilename, code);
+        var testZone = '';
+        for (var i = 0; i < functionDetails.tests.length; i++) {
+            testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${functionDetails.tests[i].parameters.join(',')});
+            if (${functionDetails.tests[i].expectedResult} != x${i}) {
+                printf("Expected result: %d; Actual result: %d\\n", ${functionDetails.tests[i].expectedResult}, x${i});
+            }`
+            // printf("%d, %d\n", x${i}, ${functionDetails.tests[i].expectedResult});
+            // printf("%d == %d ? ", x${i}, ${functionDetails.tests[i].expectedResult});`
+        }
+        var testCode = `#include "${newFilename}"
+        int main() {
+            ${testZone}
+        }`;
+        try {
+            var result = await this.run(testCode);
+            console.log(result)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     getGDBLine(data) {
         var lines = data.split('\n')
         var numbers = lines.filter(x => x[0] && x[1] && x[2] && (x[0].concat(x[1]).concat(x[2]) > 0))
@@ -69,6 +97,17 @@ class CCompiler {
                 }
                 resolve(true);
             });
+        })
+    }
+
+    readFile (fileName) {
+        return new Promise((resolve, reject) => {
+            fs.readFile(fileName, function (err, data) {
+                if (err) {
+                    reject(err);
+                }
+                resolve(data != null ? data.toString() : "")
+            })
         })
     }
 

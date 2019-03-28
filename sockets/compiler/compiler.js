@@ -3,6 +3,32 @@ const Ccompiler = require('./ccompiler')
 const Pycompiler = require('./pycompiler')
 const fs = require('fs');
 
+var test = new Ccompiler();
+functionDetails = {
+	name: 'sum',
+	returnType: 'int',
+	tests: [
+		{
+			parameters: [2, 3],
+			expectedResult: 5 
+        },
+        {
+			parameters: [-2, 3],
+			expectedResult: 1 
+        },
+        {
+			parameters: [-10, 100],
+			expectedResult: 909
+        },
+        {
+			parameters: [2, 3],
+			expectedResult: 7
+        },
+	]
+}
+test.test('1', null, functionDetails);
+
+
 class Compiler {
     constructor(fileName) {
         fileName = fileName.replace('-', '');

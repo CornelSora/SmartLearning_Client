@@ -13,5 +13,5 @@ module.exports = merge(prodEnv, {
     projectId: "nodelearning-4b086",
     messagingSenderId: "674076402937"
   }`,
-  IS_ONLINE: false
+  IS_ONLINE: true
 })

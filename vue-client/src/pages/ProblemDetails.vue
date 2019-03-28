@@ -12,14 +12,14 @@
                 </pre>
             </b-media>
         </b-tab>
-        <b-tab title="Editor" v-if="!this.$isOnline || this.$api.problem.getUserSolution()">
+        <b-tab title="Editor" v-if="this.$api.problem.getUserSolution()">
             <EditorComponent />
         </b-tab>
     </b-tabs>
 </template>
 
 <script>
-import EditorComponent from './Editor'
+import EditorComponent from '@/components/Editor'
 export default {
   name: 'problemDetails',
   data () {

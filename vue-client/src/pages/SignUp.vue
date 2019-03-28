@@ -49,9 +49,9 @@
     methods: {
       async signUp() {
         this.error.show = false
+        if (!this.isValid(this.user)) return
+        let loader = this.$loading.show()
         try {
-          if (!this.isValid(this.user)) return
-          let loader = this.$loading.show()
           const result = await this.$api.account.register(this.user)
           if (result.ok) {
             var resultedUser = result.result
@@ -63,10 +63,11 @@
             this.error.text = result.message
             this.error.show = true
           }
-          loader.hide()
         } catch (e) {
           this.error.text = "Something went wrong"
           this.error.show = true
+        } finally {
+          loader.hide()          
         }
       },
       isValid(user) {

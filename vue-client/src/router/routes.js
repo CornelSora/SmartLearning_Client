@@ -6,24 +6,30 @@ const routes = [
     {
         path: '/Problems',
         name: 'Problems',
-        component: () => import("@/components/Problems"),
+        component: () => import("@/pages/Problems"),
         meta: { requiresAuth: true }
     },
     {
-        path: '/Problem/:id',
+        path: '/Problems/:id',
         name: 'ProblemDetails',
-        component: () => import("@/components/ProblemDetails"),
+        component: () => import("@/pages/ProblemDetails"),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/AddProblem',
+        name: 'AddProblem',
+        component: () => import("@/pages/AddProblem"),
         meta: { requiresAuth: true }
     },
     {
         path: '/',
         name: 'Login',
-        component: () => import("@/components/Login")
+        component: () => import("@/pages/Login")
     },
     {
         path: '/register',
         name: 'SignUp',
-        component: () => import("@/components/SignUp")
+        component: () => import("@/pages/SignUp")
     }
 ]
 

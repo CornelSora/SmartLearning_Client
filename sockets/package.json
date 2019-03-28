@@ -2,6 +2,10 @@
     "name": "socket-chat-example",
     "version": "0.0.1",
     "description": "my first socket.io app",
+    "scripts": {
+        "start": "node socket.js",
+        "debug": "node --nolazy --inspect-brk=8081 socket.js"
+    },
     "dependencies": {
         "ace": "file:ace",
         "codemirror": "^5.40.0",
