@@ -43,7 +43,7 @@
           v-model="problem.difficulty" />
       </b-form-group>
       <b-form-group>
-        <div v-for="item in items">
+        <div v-for="item in items" :key="item">
           <FunctionTest />
         </div>
         <b-button @click="addFunction">Add</b-button>
