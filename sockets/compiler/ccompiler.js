@@ -6,11 +6,14 @@ class CCompiler {
         this._fileName = fileName;
     }
 
-    async compile(code) {
-        await this.writeFile(this._fileName + ".c", code);
+    async compile(code, fileName = "") {
+        if (!fileName) {
+            fileName = this._fileName;
+        }
+        await this.writeFile(fileName + ".c", code);
         return new Promise((resolve, reject) => {
             try {
-                cmd.get(`g++ -g ${this._fileName}.c -o ${this._fileName}`, function(err, data, stderr) {
+                cmd.get(`g++ -g ${fileName}.c -o ${fileName}`, function(err, data, stderr) {
                     if (stderr) {
                         reject(stderr);
                     } else {
@@ -24,11 +27,14 @@ class CCompiler {
         })
     }
 
-    async run(code) {
+    async run(code, fileName = "") {
+        if (!fileName) {
+            fileName = this._fileName;
+        }
         return new Promise(async (resolve, reject) => {
             try {
-                await this.compile(code);
-                cmd.get(`${this._fileName}.exe timeout /t 1`, function(err, data, stderr) {
+                await this.compile(code, fileName);
+                cmd.get(`${fileName}.exe timeout /t 1`, function(err, data, stderr) {
                     resolve(data)
                 })
             } catch (e) {
@@ -38,31 +44,43 @@ class CCompiler {
         })
     }
 
-    async test(filename, code = '', functionDetails) {
-        if (!code) {
-            code = await this.readFile(filename + '.c');
+    async test(functionDetails, filename = null,  code = '') {
+        if (!filename) {
+            filename = this._fileName
         }
-        code = code.substring(0, code.indexOf('main') - 5);
-        var newFilename = filename + '-test.c';
-        await this.writeFile(newFilename, code);
-        var testZone = '';
-        for (var i = 0; i < functionDetails.tests.length; i++) {
-            testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${functionDetails.tests[i].parameters.join(',')});
-            if (${functionDetails.tests[i].expectedResult} != x${i}) {
-                printf("Expected result: %d; Actual result: %d\\n", ${functionDetails.tests[i].expectedResult}, x${i});
-            }`
-            // printf("%d, %d\n", x${i}, ${functionDetails.tests[i].expectedResult});
-            // printf("%d == %d ? ", x${i}, ${functionDetails.tests[i].expectedResult});`
-        }
-        var testCode = `#include "${newFilename}"
-        int main() {
-            ${testZone}
-        }`;
         try {
-            var result = await this.run(testCode);
-            console.log(result)
-        } catch (error) {
-            console.log(error)
+            if (!code) {
+                code = await this.readFile(filename + '.c');
+            }
+            code = code.substring(0, code.indexOf('main') - 5);
+            var newFilename = filename + '-nomain.c';
+            await this.writeFile(newFilename, code);
+            var testZone = '';
+            for (var i = 0; i < functionDetails.tests.length; i++) {
+                testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${functionDetails.tests[i].parameters.join(',')});
+                if (${functionDetails.tests[i].expectedResult} != x${i}) {
+                    printf("Expected result: %d; Actual result: %d\\n", ${functionDetails.tests[i].expectedResult}, x${i});
+                }`
+                // printf("%d, %d\n", x${i}, ${functionDetails.tests[i].expectedResult});
+                // printf("%d == %d ? ", x${i}, ${functionDetails.tests[i].expectedResult});`
+            }
+            var testCode = `#include "${newFilename}"
+            int main() {
+                ${testZone}
+            }`;
+            try {
+                var errors = await this.run(testCode, filename + "test");
+                console.log(errors)
+                if (!errors) {
+                    return "Your code is ok.";
+                } else {
+                    return errors;
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        } catch (e) {
+            throw "You must run the code first";
         }
     }
 

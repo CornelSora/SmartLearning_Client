@@ -15,6 +15,7 @@ class Problem extends Base {
     try {
       const result = await this.http.get(`/problems/${problemID}/${userID}`)
       this._userSolution = result.data.solution
+      this._functions = result.data.functions
       return super.ok(result)
     } catch (e) {
       return super.error(e)
@@ -58,6 +59,10 @@ class Problem extends Base {
 
   getUserSolution() {
     return this._userSolution
+  }
+
+  getProblemFunctions() {
+    return this._functions
   }
 }
 

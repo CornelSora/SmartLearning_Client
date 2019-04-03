@@ -20,6 +20,7 @@
       <b-btn @click='onRunEvent'>Run</b-btn>
       <b-btn @click='onCompileEvent' v-if="language !== this.languages.python">Compile</b-btn>
       <b-btn @click='onDebugEvent'>Debug</b-btn>
+      <b-btn @click='onTestEvent' v-if="language !== this.languages.python">Test</b-btn>
       <b-btn @click='onKillEvent'>Kill</b-btn>
     </div>
     <div v-else>
@@ -66,47 +67,53 @@ export default {
       debugMode: false,
       debugStarted: false,
       content: 'Here write',
+      functions: [],
       problemID: this.$route.params.id,
       languages: {
         c_cpp: 'c_cpp',
         python: 'python'
       },
-      language: 'c_cpp',
+      language: 'c_cpp'
     }
   },
   mounted () {
-    socket.on('result', (cmdResult) => {
-      this.result = cmdResult
-      loader.hide()
-    })
-    socket.on('debugResult', (debugResult) => {
-      var resultEditor = this.$refs.resultEditor.editor
-      var n = resultEditor.getSession().getValue().split('\n').length;
-      if (debugResult.trim().length != 0) {
-        this.result += (n > 1 ? '\n' : '') + debugResult.trim() + '\n'
-      }
-      setTimeout(() => {
-        resultEditor.focus()
-        resultEditor.resize(true);
-        resultEditor.scrollToLine(n + 1, true, true, function () {});
-        resultEditor.gotoLine(n*2, 1, true);
-        loader.hide()
-      }, 100)
-    })
-    socket.on('colorLine', (lineNumber) => {
-      var resultEditor = this.$refs.resultEditor.editor
-      var editor = this.$refs.editor.editor
-        if (this.marker) {
-          editor.session.removeMarker(this.marker)
-        }
-        this.marker = editor.session.addMarker(new Range(lineNumber - 1, 0, lineNumber - 1, 10), 'myMarker', 'fullLine');
-    })
-    socket.on('debugFinished', () => {
-      this.onDebugEnd()
-    })
     this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
+    this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
+    console.log(this.functions)
+    this.setListeners()
   },
   methods: {
+    setListeners () {
+      socket.on('result', (cmdResult) => {
+        this.result = cmdResult ? cmdResult : ''
+        loader.hide()
+      })
+      socket.on('debugResult', (debugResult) => {
+        var resultEditor = this.$refs.resultEditor.editor
+        var n = resultEditor.getSession().getValue().split('\n').length;
+        if (debugResult.trim().length != 0) {
+          this.result += (n > 1 ? '\n' : '') + debugResult.trim() + '\n'
+        }
+        setTimeout(() => {
+          resultEditor.focus()
+          resultEditor.resize(true);
+          resultEditor.scrollToLine(n + 1, true, true, function () {});
+          resultEditor.gotoLine(n*2, 1, true);
+          loader.hide()
+        }, 100)
+      })
+      socket.on('colorLine', (lineNumber) => {
+        var resultEditor = this.$refs.resultEditor.editor
+        var editor = this.$refs.editor.editor
+          if (this.marker) {
+            editor.session.removeMarker(this.marker)
+          }
+          this.marker = editor.session.addMarker(new Range(lineNumber - 1, 0, lineNumber - 1, 10), 'myMarker', 'fullLine');
+      })
+      socket.on('debugFinished', () => {
+        this.onDebugEnd()
+      })
+    },
     editorInit () {
       require('brace/ext/language_tools') //language extension prerequsite...
       require('brace/mode/html')
@@ -239,6 +246,11 @@ export default {
       } else if (this.language == this.languages.python) {
         this.sendDebugCommand('locals()')
       }
+    },
+    onTestEvent () {
+      loader = this.$loading.show()
+      this.result = ''
+      socket.emit('test', this.functions[0])
     },
     async onSaveEvent () {
       let loader = this.$loading.show()

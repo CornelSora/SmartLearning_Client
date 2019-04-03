@@ -11,11 +11,11 @@ app.use(bodyParser());
 const debugStarted = {};
 
 io.on('connection', function(socket){
-    var compiler = new Compiler(socket.id)
+    var compiler = new Compiler(socket.id);
 
     var processRef
     socket.on('disconnect', () => {
-    })
+    });
     socket.on('debugStart', async (code) => {
         let i = 0
         try {
@@ -41,7 +41,7 @@ io.on('connection', function(socket){
         } catch(e) {
             socket.emit("result", e.toString());            
         }
-    })
+    });
 
     socket.on("debug", function(command) {
         try {
@@ -50,18 +50,27 @@ io.on('connection', function(socket){
         } catch (e) {
 
         }
-    })
+    });
 
     socket.on("compile", async (command) => {
         try {
-            await compiler.compile(command.code, command.language)
+            await compiler.compile(command.code, command.language);
             socket.emit("result", "Compilation successful!");
         } catch (e) {
             socket.emit("result", e.toString());            
         } finally {
-            compiler.removeFiles();
+            //  compiler.removeFiles();
         }
-    })
+    });
+
+    socket.on("test", async (functionDetails) => {
+        try {
+            var testResult = await compiler.test(functionDetails);
+            socket.emit("result", testResult);
+        } catch (e) {
+            socket.emit("result", e.toString());
+        }
+    });
 
     // socket.on("compile", async (code, language) => {
     //     compiler.compile(code, language)
@@ -76,7 +85,7 @@ io.on('connection', function(socket){
 
     socket.on("run", async (command) => {
         try {
-            const data = await compiler.run(command.code, command.language)
+            const data = await compiler.run(command.code, command.language);
             socket.emit("result", data);
         } catch (e) {
             socket.emit("result", e.toString());
@@ -94,7 +103,7 @@ io.on('connection', function(socket){
         .catch ((e) => {
             socket.emit("result", e.toString());
         });
-    })
+    });
 
     //  socket.emit("auth", socket.id)
 });

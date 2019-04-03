@@ -26,7 +26,7 @@ functionDetails = {
         },
 	]
 }
-test.test('1', null, functionDetails);
+//  test.test('1', functionDetails);
 
 
 class Compiler {
@@ -56,6 +56,14 @@ class Compiler {
             } else if (language == "python") {
                 return await this.pCompiler.run(code);
             }
+        } catch (e) {
+            throw e
+        }
+    }
+
+    async test(functionDetails) {
+        try {
+            return await this.cCompiler.test(functionDetails);
         } catch (e) {
             throw e
         }
