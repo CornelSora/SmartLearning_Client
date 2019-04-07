@@ -1,16 +1,57 @@
 <template>
     <b-tabs class="problem-details">
         <b-tab title="Problem content" active>
-            <b-media v-if="problem">
-                <br/>
-                <b>
-                    <h4 class="mt-0">{{ problem.name }}</h4>
-                    <p>Difficulty: {{ problem.difficulty }}</p>
-                </b>
-                <pre class="problem-content">
-                    <div>{{ problem.content }}</div>
-                </pre>
-            </b-media>
+          <b-media v-if="problem">
+            <br/>
+            <b>
+              <h2 class="mt-0">{{ problem.name }}</h2>
+              <p>Difficulty: {{ problem.difficulty }}</p>
+            </b>
+            <pre class="problem-content">
+              <div>{{ problem.content }}</div>
+            </pre>
+            <div v-if="problem.functions && problem.functions.length > 0">
+              <h4>Use the following function(s)</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Return type</th>
+                    <th>Parameters</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="fct in problem.functions" :key="fct.name">
+                    <td>{{fct.name}}</td>
+                    <td>{{fct.returnType}}</td>
+                    <td v-if="fct.parameters && fct.parameters.length > 0">
+                      {{fct.parameters.map(x => x.parameterType).join(',')}}
+                    </td>                  
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-if="problem.tests && problem.tests.length > 0">
+              <h4>It should pass the following tests:</h4>
+              <table>
+                <thead>
+                  <th>Parameters</th>
+                  <th>Expected result</th>
+                </thead>
+                <tbody>
+                  <tr v-for="test in problem.tests" :key="test.expectedResult">
+                    <td>
+                      <div v-for="param in test.parameters" :key="param">
+                        Param{{test.parameters.indexOf(param)}}: {{param}}
+                      </div>
+                    </td>
+                    <td>{{test.parameters.join(',')}}</td>
+                    <td>{{test.expectedResult}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </b-media>
         </b-tab>
         <b-tab title="Editor" v-if="this.$api.problem.getUserSolution()">
             <EditorComponent />
@@ -36,6 +77,9 @@ export default {
       const result = await this.$api.problem.getProblem(this.problemID, this.$userID)
       if (result.ok) {
         this.problem = result.result
+        this.problem.tests = this.problem.functions.map(x => x.tests)[0]
+        this.problem.tests = this.problem.tests.slice(0, this.problem.tests.length / 2)
+        console.log(this.problem)
       } else {
         console.warn('something went wrong when I got the problems')
       }

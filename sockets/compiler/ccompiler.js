@@ -56,8 +56,24 @@ class CCompiler {
             var newFilename = filename + '-nomain.c';
             await this.writeFile(newFilename, code);
             var testZone = '';
+            var listOfParameters = '';
             for (var i = 0; i < functionDetails.tests.length; i++) {
-                testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${functionDetails.tests[i].parameters.join(',')});
+                listOfParameters = '';
+                for (var j = 0; j < functionDetails.tests[i].parameters.length; j++) {
+                    if (j > 0) {
+                        listOfParameters += ','
+                    }
+                    var paramType = functionDetails.parameters[j].parameterType;
+                    if (paramType.indexOf('*') > -1) {
+                        var pType = paramType.split('*')[0]
+                        testZone += `${pType} param${i}[${functionDetails.tests[i].parameters[j].split(',').length}] = ${functionDetails.tests[i].parameters[j]};`
+                        listOfParameters += `param${i}`
+                    } else {
+                        listOfParameters += `${functionDetails.tests[i].parameters[j]}`
+                    }
+                }
+                //  testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${functionDetails.tests[i].parameters.join(',')});
+                testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${listOfParameters});
                 if (${functionDetails.tests[i].expectedResult} != x${i}) {
                     printf("Expected result: %d; Actual result: %d\\n", ${functionDetails.tests[i].expectedResult}, x${i});
                 }`
@@ -77,7 +93,7 @@ class CCompiler {
                     return errors;
                 }
             } catch (error) {
-                console.log(error)
+                return error
             }
         } catch (e) {
             throw "You must run the code first";
