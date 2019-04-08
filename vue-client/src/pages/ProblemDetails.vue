@@ -1,4 +1,6 @@
 <template>
+  <div>
+    <b-btn @click="goToProblems" class="btnLogout" variant="primary">Problems</b-btn>
     <b-tabs class="problem-details">
         <b-tab title="Problem content" active>
           <b-media v-if="problem">
@@ -12,12 +14,12 @@
             </pre>
             <div v-if="problem.functions && problem.functions.length > 0">
               <h4>Use the following function(s)</h4>
-              <table>
-                <thead>
+              <table class="table table-bordered">
+                <thead class="thead-light">
                   <tr>
-                    <th>Name</th>
-                    <th>Return type</th>
-                    <th>Parameters</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Return type</th>
+                    <th scope="col">Parameter types</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -26,17 +28,17 @@
                     <td>{{fct.returnType}}</td>
                     <td v-if="fct.parameters && fct.parameters.length > 0">
                       {{fct.parameters.map(x => x.parameterType).join(',')}}
-                    </td>                  
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <div v-if="problem.tests && problem.tests.length > 0">
               <h4>It should pass the following tests:</h4>
-              <table>
-                <thead>
-                  <th>Parameters</th>
-                  <th>Expected result</th>
+              <table class="table table-bordered">
+                <thead class="thead-light">
+                  <th scope="col">Parameters</th>
+                  <th scope="col">Expected result</th>
                 </thead>
                 <tbody>
                   <tr v-for="test in problem.tests" :key="test.expectedResult">
@@ -45,7 +47,6 @@
                         Param{{test.parameters.indexOf(param)}}: {{param}}
                       </div>
                     </td>
-                    <td>{{test.parameters.join(',')}}</td>
                     <td>{{test.expectedResult}}</td>
                   </tr>
                 </tbody>
@@ -53,10 +54,11 @@
             </div>
           </b-media>
         </b-tab>
-        <b-tab title="Editor" v-if="this.$api.problem.getUserSolution()">
+        <b-tab title="Editor" v-if="solution">
             <EditorComponent />
         </b-tab>
     </b-tabs>
+  </div>
 </template>
 
 <script>
@@ -77,8 +79,11 @@ export default {
       const result = await this.$api.problem.getProblem(this.problemID, this.$userID)
       if (result.ok) {
         this.problem = result.result
-        this.problem.tests = this.problem.functions.map(x => x.tests)[0]
-        this.problem.tests = this.problem.tests.slice(0, this.problem.tests.length / 2)
+        if (this.problem.functions) {
+          this.problem.tests = this.problem.functions.map(x => x.tests)[0]
+          this.problem.tests = this.problem.tests.slice(0, this.problem.tests.length / 2)
+        }
+        this.solution = this.$api.problem.getUserSolution()
         console.log(this.problem)
       } else {
         console.warn('something went wrong when I got the problems')
@@ -87,6 +92,11 @@ export default {
       console.warn(e)
     } finally {
       loader.hide()
+    }
+  },
+  methods: {
+    goToProblems() {
+      this.$router.push({ path: '/problems' })
     }
   },
   components: {
