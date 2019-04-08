@@ -19,7 +19,8 @@
                   <tr>
                     <th scope="col">Name</th>
                     <th scope="col">Return type</th>
-                    <th scope="col">Parameter types</th>
+                    <th scope="col">Parameters</th>
+                    <!-- <th scope="col">Parameter types</th> -->
                   </tr>
                 </thead>
                 <tbody>
@@ -27,7 +28,19 @@
                     <td>{{fct.name}}</td>
                     <td>{{fct.returnType}}</td>
                     <td v-if="fct.parameters && fct.parameters.length > 0">
-                      {{fct.parameters.map(x => x.parameterType).join(',')}}
+                      <!-- {{fct.parameters.map(x => x.parameterType).join(',')}} -->
+                      <table class="table-bordered">
+                        <thead>
+                          <th>Type</th>
+                          <th>Details</th>
+                        </thead>
+                        <tbody>
+                          <tr v-for="param in fct.parameters" :key="param">
+                            <td>{{ param.parameterType }}</td>
+                            <td>{{ param.parameterDesc }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </td>
                   </tr>
                 </tbody>

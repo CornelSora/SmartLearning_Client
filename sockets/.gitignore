@@ -35,5 +35,5 @@ coverage
 *.swp
 
 #exe
-.exe
-.c
+*.exe
+*.c

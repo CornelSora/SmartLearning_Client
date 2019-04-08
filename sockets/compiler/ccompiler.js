@@ -57,6 +57,8 @@ class CCompiler {
             await this.writeFile(newFilename, code);
             var testZone = '';
             var listOfParameters = '';
+            testZone += `int fLength123abc=${functionDetails.tests.length};`
+            testZone += `int currentTest123abc = 0;`
             for (var i = 0; i < functionDetails.tests.length; i++) {
                 listOfParameters = '';
                 for (var j = 0; j < functionDetails.tests[i].parameters.length; j++) {
@@ -74,8 +76,14 @@ class CCompiler {
                 }
                 //  testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${functionDetails.tests[i].parameters.join(',')});
                 testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${listOfParameters});
+
                 if (${functionDetails.tests[i].expectedResult} != x${i}) {
-                    printf("Expected result: %d; Actual result: %d\\n", ${functionDetails.tests[i].expectedResult}, x${i});
+                    if (currentTest123abc < (fLength123abc / 2)) {
+                        printf("Expected result: %d; Actual result: %d\\n", ${functionDetails.tests[i].expectedResult}, x${i});
+                    } else {
+                        printf("Your code failed a hidden test");
+                    }
+                    currentTest123abc++;
                 }`
                 // printf("%d, %d\n", x${i}, ${functionDetails.tests[i].expectedResult});
                 // printf("%d == %d ? ", x${i}, ${functionDetails.tests[i].expectedResult});`
