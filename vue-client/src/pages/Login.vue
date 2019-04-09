@@ -20,6 +20,7 @@
       variant="outline-success"
       @click="login">Connection</b-btn>
     <p>You don't have an account ? You can <router-link to="/register">create one</router-link></p>
+    <p>Did you forgot your password ? You can <router-link to="/forgot-password">reset it</router-link></p>
   </b-container>
 </template>
 
