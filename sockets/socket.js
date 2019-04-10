@@ -59,16 +59,18 @@ io.on('connection', function(socket){
         } catch (e) {
             socket.emit("result", e.toString());            
         } finally {
-            //  compiler.removeFiles();
+            compiler.removeFiles();
         }
     });
 
-    socket.on("test", async (functionDetails) => {
+    socket.on("test", async (functionDetails, code) => {
         try {
-            var testResult = await compiler.test(functionDetails);
+            var testResult = await compiler.test(functionDetails, code);
             socket.emit("result", testResult);
         } catch (e) {
             socket.emit("result", e.toString());
+        } finally {
+            compiler.removeFiles();
         }
     });
 

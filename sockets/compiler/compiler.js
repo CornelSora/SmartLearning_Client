@@ -61,9 +61,9 @@ class Compiler {
         }
     }
 
-    async test(functionDetails) {
+    async test(functionDetails, code) {
         try {
-            return await this.cCompiler.test(functionDetails);
+            return await this.cCompiler.test(functionDetails, code);
         } catch (e) {
             throw e
         }

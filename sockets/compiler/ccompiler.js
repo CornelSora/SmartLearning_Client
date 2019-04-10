@@ -44,7 +44,7 @@ class CCompiler {
         })
     }
 
-    async test(functionDetails, filename = null,  code = '') {
+    async test(functionDetails, code = '', filename = null) {
         if (!filename) {
             filename = this._fileName
         }
@@ -79,16 +79,21 @@ class CCompiler {
 
                 if (${functionDetails.tests[i].expectedResult} != x${i}) {
                     if (currentTest123abc < (fLength123abc / 2)) {
+                        printf("==========\\n");
+                        printf("Test failed:\\n");
+                        printf("${functionDetails.tests[i].parameters.join(',')}\\n");
                         printf("Expected result: %d; Actual result: %d\\n", ${functionDetails.tests[i].expectedResult}, x${i});
+                        printf("==========\\n");
                     } else {
-                        printf("Your code failed a hidden test");
+                        printf("Your code failed a hidden test: test${i}\\n");
                     }
                     currentTest123abc++;
                 }`
                 // printf("%d, %d\n", x${i}, ${functionDetails.tests[i].expectedResult});
                 // printf("%d == %d ? ", x${i}, ${functionDetails.tests[i].expectedResult});`
             }
-            var testCode = `#include "${newFilename}"
+            var testCode = `#include<stdio.h>
+            #include "${newFilename}"
             int main() {
                 ${testZone}
             }`;

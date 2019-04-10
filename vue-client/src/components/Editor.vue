@@ -20,6 +20,7 @@
       <b-btn @click='onRunEvent'>Run</b-btn>
       <b-btn @click='onCompileEvent' v-if="language !== this.languages.python">Compile</b-btn>
       <b-btn @click='onDebugEvent'>Debug</b-btn>
+      <b-btn @click="onBeautifyEvent">Beautify</b-btn>
       <b-btn @click='onTestEvent' v-if="language !== this.languages.python">Test</b-btn>
       <b-btn @click='onKillEvent'>Kill</b-btn>
     </div>
@@ -85,7 +86,25 @@ export default {
   methods: {
     setListeners () {
       socket.on('result', (cmdResult) => {
+        this.$refs.editor.editor.getSession().setAnnotations([])
         this.result = cmdResult ? cmdResult : ''
+        if (this.result.indexOf('error') > -1) {
+          var lines = this.result.split('\n')
+          for (var i = 0; i < lines.length; i++) {
+            if (lines[i].indexOf('error') > -1) {
+              var numbers = lines[i].split(':')
+              var oldAnnotations = this.$refs.editor.editor.getSession().getAnnotations()
+              var newAnnotation = {
+                row: parseInt(numbers[1]) - 1,
+                column: parseInt(numbers[2]),
+                text: lines[i].split('error')[1], 
+                type: 'error'
+              }
+              oldAnnotations.push(newAnnotation)
+              this.$refs.editor.editor.getSession().setAnnotations(oldAnnotations)
+            }
+          }
+        }
         loader.hide()
       })
       socket.on('debugResult', (debugResult) => {
@@ -127,6 +146,7 @@ export default {
       require('brace/ext/spellcheck')
       require('brace/ext/error_marker')
       require('brace/keybinding/emacs')
+      //  beautify = require('brace/ext/beautify').beautify
       this.$refs.editor.editor.renderer.setShowGutter(false)
 
       var editor = this.$refs.editor.editor
@@ -179,13 +199,14 @@ export default {
         }
       }
     },
-    onRunEvent () {
+    async onRunEvent () {
+      await this.onSaveEvent()
       loader = this.$loading.show()
       this.result = 'Running...'
       socket.emit('run', { code: this.content, language: this.language })
     },
-    onCompileEvent () {
-      console.warn(this.language)
+    async onCompileEvent () {
+      await this.onSaveEvent()
       loader = this.$loading.show()
       this.result = 'Running...'
       socket.emit('compile', { code: this.content, language: this.language })
@@ -250,9 +271,15 @@ export default {
     onTestEvent () {
       loader = this.$loading.show()
       this.result = ''
-      socket.emit('test', this.functions[0])
+      socket.emit('test', this.functions[0], this.content)
     },
     async onSaveEvent () {
+      // this.$refs.editor.editor.getSession().setAnnotations([{
+      //   row: 1,
+      //   column: 0,
+      //   text: "Error Message", // Or the Json reply from the parser 
+      //   type: "error" // also "warning" and "information"
+      // }]);
       let loader = this.$loading.show()
       try {
         //  const contentToSend = this.content.replace('\n', '\\n')
@@ -274,6 +301,10 @@ export default {
         this.sendDebugCommand('exit()')
         this.onDebugEnd()
       }
+    },
+    onBeautifyEvent () {
+      // console.warn(beautify)
+      // beautify.beautify(this.$refs.editor.editor.getSession())
     }
   },
   components: {

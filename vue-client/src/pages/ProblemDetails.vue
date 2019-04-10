@@ -35,7 +35,7 @@
                           <th>Details</th>
                         </thead>
                         <tbody>
-                          <tr v-for="param in fct.parameters" :key="param">
+                          <tr v-for="param in fct.parameters" :key="fct.parameters.indexOf(param)">
                             <td>{{ param.parameterType }}</td>
                             <td>{{ param.parameterDesc }}</td>
                           </tr>
@@ -54,7 +54,7 @@
                   <th scope="col">Expected result</th>
                 </thead>
                 <tbody>
-                  <tr v-for="test in problem.tests" :key="test.expectedResult">
+                  <tr v-for="test in problem.tests" :key="problem.tests.indexOf(test)">
                     <td>
                       <div v-for="param in test.parameters" :key="param">
                         Param{{test.parameters.indexOf(param)}}: {{param}}
