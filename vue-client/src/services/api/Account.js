@@ -12,6 +12,20 @@ class Account extends Base {
     } finally {
     }
   }
+  async saveClient(userID, email) {
+    try {
+      var request = {
+        "userID": userID.toString(),
+        "clientInfo": {
+          "email": email.toString()
+        }  
+      }
+      const result = await this.http.post('/users/clients', request)
+      return super.ok(result)
+    } catch (e) {
+      return super.error(e)
+    }
+  }
 }
 
 export default Account

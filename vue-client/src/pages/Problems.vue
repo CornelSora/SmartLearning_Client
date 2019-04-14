@@ -1,5 +1,6 @@
 <template>
   <div>
+    <b-btn @click="addClient" class="btnLogout" variant="primary">Add client</b-btn>
     <b-btn @click="addProblem" class="btnLogout" variant="primary">Add problem</b-btn>
     <b-btn @click="logout" class="btnLogout" variant="primary">Logout</b-btn>
     <center>
@@ -159,11 +160,14 @@ export default {
       this.totalRows = filteredItems.length
       this.currentPage = 1
     },
-    info(item, index, target) {
+    info (item, index, target) {
       this.$router.push(`problems/${item.UID}`)
     },
-    addProblem() {
+    addProblem () {
       this.$router.push('AddProblem')
+    },
+    addClient () {
+      this.$router.push('AddClient')
     }
   }
 }

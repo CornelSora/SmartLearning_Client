@@ -30,7 +30,13 @@ const routes = [
         path: '/register',
         name: 'SignUp',
         component: () => import("@/pages/SignUp")
-    }
+    },
+    {
+        path: '/AddClient',
+        name: 'Client',
+        component: () => import("@/pages/AddClients"),
+        meta: { requiresAuth: true }
+    },
 ]
 
 export default routes

@@ -200,13 +200,13 @@ export default {
       }
     },
     async onRunEvent () {
-      await this.onSaveEvent()
+      // await this.onSaveEvent()
       loader = this.$loading.show()
       this.result = 'Running...'
       socket.emit('run', { code: this.content, language: this.language })
     },
     async onCompileEvent () {
-      await this.onSaveEvent()
+      // await this.onSaveEvent()
       loader = this.$loading.show()
       this.result = 'Running...'
       socket.emit('compile', { code: this.content, language: this.language })
