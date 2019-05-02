@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-btn @click="addClient" class="btnLogout" variant="primary">Add client</b-btn>
+    <b-btn @click="addClient" class="btnLogout" variant="primary">Clients</b-btn>
     <b-btn @click="addProblem" class="btnLogout" variant="primary">Add problem</b-btn>
     <b-btn @click="logout" class="btnLogout" variant="primary">Logout</b-btn>
     <center>

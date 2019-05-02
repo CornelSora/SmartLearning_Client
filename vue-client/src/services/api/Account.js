@@ -26,6 +26,14 @@ class Account extends Base {
       return super.error(e)
     }
   }
+  async getClients(userID) {
+    try {
+      const result = await this.http.get(`/users/clients/${userID}`)
+      return super.ok(result)
+    } catch (e) {
+      return super.error(e)
+    }
+  }
 }
 
 export default Account
