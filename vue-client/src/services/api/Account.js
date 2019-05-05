@@ -34,6 +34,16 @@ class Account extends Base {
       return super.error(e)
     }
   }
+
+  async sendEmail(email) {
+    try {
+      var request = {
+        "email": email.toString()
+      }
+      await this.http.post(`/emails/send`, JSON.stringify(request))
+    } catch (e) {
+    }
+  }
 }
 
 export default Account

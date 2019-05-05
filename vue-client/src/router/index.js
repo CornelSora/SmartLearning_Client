@@ -17,10 +17,12 @@ router.beforeEach((to, from, next) => {
   const currentUser = firebase.auth().currentUser
   console.log(currentUser)
 
+  this.$token = to.query.token
+
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
-  if (requiresAuth && !currentUser) next('login')
-  else if (!requiresAuth && currentUser) next('problems')
+  if (requiresAuth && !currentUser && !this.$token) next('login')
+  else if (!requiresAuth && (currentUser || this.$token)) next('problems')
   else next()
   loader.hide()
 })

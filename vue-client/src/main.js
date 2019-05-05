@@ -26,6 +26,8 @@ firebase.initializeApp(config);
 const isOnline = process.env.IS_ONLINE;
 Vue.prototype.$isOnline = isOnline;
 
+Vue.prototype.$token = null;
+
 let app;
 firebase.auth().onAuthStateChanged((user) => {
   Vue.prototype.$userID = user ? user.uid: ''
