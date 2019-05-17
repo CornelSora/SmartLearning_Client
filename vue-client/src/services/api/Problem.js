@@ -4,8 +4,10 @@ class Problem extends Base {
   async getAllProblems () {
     try {
       const result = await this.http.get('/problems')
+      debugger
       return super.ok(result)
     } catch (e) {
+      debugger
       return super.error(e)
     } finally {
     }

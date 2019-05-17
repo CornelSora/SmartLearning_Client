@@ -80,7 +80,7 @@ export default {
   mounted () {
     this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
     this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
-    console.log(this.functions)
+    console.log('===============mounted================')
     this.setListeners()
   },
   methods: {
@@ -132,6 +132,11 @@ export default {
       socket.on('debugFinished', () => {
         this.onDebugEnd()
       })
+      document.addEventListener("trigger", (e) => {
+        this.$refs.editor.editor.focus()
+        if (this.content) return
+        this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
+      });
     },
     editorInit () {
       require('brace/ext/language_tools') //language extension prerequsite...
@@ -150,7 +155,7 @@ export default {
       this.$refs.editor.editor.renderer.setShowGutter(false)
 
       var editor = this.$refs.editor.editor
-      editor.on('guttermousedown', function(e) {
+      editor.on('guttermousedown', (e) => {
         var target = e.domEvent.target;
         if (target.className.indexOf('ace_gutter-cell') == -1) {
           return;
@@ -168,7 +173,12 @@ export default {
           breakpoints.push(row)
         } else {
           e.editor.session.clearBreakpoint(row)
-          breakpoints.splice(breakpoints.indexOf(row), 1)
+          let breakNr = breakpoints.indexOf(row)
+          breakpoints.splice(breakNr, 1)
+          console.warn(this.debugStarted)
+          if (this.debugStarted) {
+            this.removeBreakpointFromGdb(breakNr + 1)
+          }
         }
         e.stop()
       });
@@ -229,6 +239,11 @@ export default {
           breakpointsSent.push(breakpoints[i])
         }
       }
+    },
+    removeBreakpointFromGdb(breakpoint) {
+      let cmd = `del ${breakpoint}`
+      console.log(cmd)
+      this.sendDebugCommand(cmd)
     },
     sendDebugCommand (command) {
       if (!command) {
@@ -296,7 +311,7 @@ export default {
     onDebugStop () {
       this.debugMode = false
       if (this.language == this.languages.c_cpp) {
-        this.sendDebugCommand('exit')
+        this.sendDebugCommand('quit')
       } else if (this.language == this.languages.python) {
         this.sendDebugCommand('exit()')
         this.onDebugEnd()

@@ -10,7 +10,7 @@ app.use(bodyParser());
 
 const debugStarted = {};
 
-io.on('connection', function(socket){
+io.on('connection', function(socket) {
     var compiler = new Compiler(socket.id);
 
     var processRef
@@ -26,8 +26,9 @@ io.on('connection', function(socket){
                 'data',
                 function(data) {
                     if (data.indexOf("exited") > -1 || data.indexOf('Quit') > -1) {
-                        compiler.removeFiles();
                         socket.emit("debugFinished");
+                        compiler.removeFiles();
+                        return;
                     }
                     try {
                         socket.emit("debugResult", data);

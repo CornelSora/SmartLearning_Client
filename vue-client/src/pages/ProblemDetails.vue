@@ -67,7 +67,7 @@
             </div>
           </b-media>
         </b-tab>
-        <b-tab title="Editor" v-if="solution">
+        <b-tab title="Editor" @click="trigger">
             <EditorComponent />
         </b-tab>
     </b-tabs>
@@ -81,7 +81,7 @@ export default {
   data () {
     return {
       problem: {},
-      solution: '',
+      solution: null,
       problemID: this.$route.params.id
     }
   },
@@ -110,6 +110,9 @@ export default {
   methods: {
     goToProblems() {
       this.$router.push({ path: '/problems' })
+    },
+    trigger() {
+      document.dispatchEvent(new Event("trigger"))
     }
   },
   components: {

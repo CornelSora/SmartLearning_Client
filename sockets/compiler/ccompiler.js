@@ -161,8 +161,16 @@ class CCompiler {
     removeFiles () {
         try {
             fs.unlink(`${this._fileName}.c`, (data, err) => {
+                if (err) {
+                    console.log("We couldn't save your file");
+                    console.log(err);
+                }
             })
             fs.unlink(`${this._fileName}.exe`, (data, err) => {
+                if (err) {
+                    console.log("We couldn't save your file");
+                    console.log(err);
+                }
             })
         } catch (e) {
             console.log(e)

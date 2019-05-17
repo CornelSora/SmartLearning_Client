@@ -12,6 +12,7 @@ import api from './services/api'
 import Loading from 'vue-loading-overlay'
 // Import stylesheet
 import 'vue-loading-overlay/dist/vue-loading.css'
+import * as LocalStorage from 'local-storage'
 
 Vue.use(BootstrapVue)
 Vue.use(Loading)
@@ -37,6 +38,11 @@ firebase.auth().onAuthStateChanged((user) => {
       router,
       components: { App },
       template: '<App/>'
+    })
+  }
+  if (user) {
+    user.getIdToken(true).then(function(idToken) {
+      LocalStorage.set('headerToken', idToken)
     })
   }
 })
