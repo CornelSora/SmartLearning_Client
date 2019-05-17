@@ -136,6 +136,7 @@ export default {
         this.$refs.editor.editor.focus()
         if (this.content) return
         this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
+        this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
       });
     },
     editorInit () {
