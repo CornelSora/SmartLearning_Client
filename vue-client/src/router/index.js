@@ -20,7 +20,7 @@ router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const authOrTest = to.matched.some(record => record.meta.requiresAuthOrAnonymousTest)
   console.warn(authOrTest)
-  if (authOrTest || currentUser) {
+  if (authOrTest) {
     next()
     loader.hide()
     return

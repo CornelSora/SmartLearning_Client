@@ -13,13 +13,23 @@ class Problem extends Base {
 
   async getProblem(problemID, userID) {
     try {
-      const result = await this.http.get(`/problems/${problemID}/${userID}`)
+      const URL = `/problems/${problemID}/${userID}`
+      const result = await this.http.get(URL)
       this._userSolution = result.data.solution
       this._functions = result.data.functions
       return super.ok(result)
     } catch (e) {
       return super.error(e)
     } finally {
+    }
+  }
+
+  async getDailyProblem() {
+    try {
+      const result = await this.http.get(`/problems/daily-problem`)
+      return super.ok(result)
+    } catch (e) {
+      return super.error(e)
     }
   }
 

@@ -1,18 +1,39 @@
 <template>
   <div>
-    <div style="display: flex;">
+    <!--<div style="display: flex;">
       <label>Language:</label>
       <b-select v-model="language">
         <option>{{this.languages.python}}</option>
         <option>{{this.languages.c_cpp}}</option>
       </b-select>
-    </div>
-    <div style="width: 100%; border: 1px solid #dadadb; display: block;">
+    </div> -->
+    <b-form inline class="small right preferences">
+        <label class="mr-sm-2" for="inline-form-custom-select-pref">Language</label>
+        <b-form-select
+          class="mb-2 mr-sm-2 mb-sm-0"
+          v-model="language">
+        >
+          <option>{{this.languages.python}}</option>
+          <option>{{this.languages.c_cpp}}</option>
+        </b-form-select>
+        <label class="mr-sm-2" for="inline-form-custom-select-pref">Theme</label>
+        <b-form-select
+          class="sm-2 mr-sm-2 mb-sm-0"
+          v-model="theme">
+        >
+          <option>dawn</option>
+          <option>twilight</option>
+          <option>terminal</option>
+          <option>cobalt</option>
+          <option>eclipse</option>
+        </b-form-select>
+    </b-form>
+    <div class="editor-border">
       <editor
           v-model='content'
           @init='editorInit'
           :lang='language'
-          theme='dawn'
+          :theme='theme'
           width='100%'
           height='500px'
           :options='options'
@@ -21,17 +42,17 @@
       </editor>
     </div>
     <center>
-      <div v-if="!debugMode" style="width: 100%; border: 2px solid #dadadb; display: block;">
-        <b-btn @click='onSaveEvent' v-if="!this.loadedAlone">Save</b-btn>
-        <b-btn @click='onRunEvent'>Run</b-btn>
-        <b-btn @click='onCompileEvent' v-if="language !== this.languages.python">Compile</b-btn>
+      <div v-if="!debugMode" class="buttons-area">
+        <b-btn @click='onSaveEvent' v-if="!this.loadedAlone" variant="primary">Save</b-btn>
+        <b-btn @click='onCompileEvent' v-if="language !== this.languages.python" variant="primary">Compile</b-btn>
+        <b-btn @click='onRunEvent' variant="success">Run</b-btn>
         <!-- <b-btn @click='onDebugEvent'>Debug</b-btn> -->
-        <b-btn @click='onDebugEvent'><span class="glyphicon glyphicon-share-alt"></span>Debug</b-btn>
+        <b-btn @click='onDebugEvent' variant="danger"><span class="glyphicon glyphicon-share-alt"></span>Debug mode</b-btn>
         <!-- <b-btn @click="onBeautifyEvent">Beautify</b-btn> -->
-        <b-btn @click='onTestEvent' v-if="language !== this.languages.python && !this.loadedAlone">Test</b-btn>
+        <b-btn @click='onTestEvent' v-if="language !== this.languages.python && !this.loadedAlone" variant="primary">Test</b-btn>
         <b-btn @click='onKillEvent'>Kill</b-btn>
       </div>
-      <div v-else>
+      <div v-else class="buttons-area">
         <b-btn @click='onDebugStart' :disabled="debugStarted">Start</b-btn>
         <b-btn @click='onDebugNext'>Next</b-btn>
         <b-btn @click='onDebugContinue'>Continue</b-btn>
@@ -39,18 +60,30 @@
         <b-btn @click='onDebugStop'>Stop</b-btn>
       </div>
     </center>
-    <div style="width: 100%; border: 1px solid #dadadb; display: block;">
+    <div class="editor-border">
       <editor
           v-model='result'
           @init='resultEditorInit'
-          lang='text'
-          theme='dawn'
-          width='100%'
+          lang='batchfile'
+          :theme='theme'
+          :width='debugMode ? "49%" : "100%"'
           height='200px'
           :readonly='true'
           ref='resultEditor'
           >
       </editor>
+      <!-- <editor
+          v-model='debugInfo'
+          @init='debugEditorInit'
+          lang='batchfile'
+          :theme='theme'
+          width='49%'
+          height='200px'
+          :readonly='true'
+          ref='debugEditor'
+          style="float: right"
+          >
+      </editor> -->
     </div>
   </div>
 </template>
@@ -83,6 +116,7 @@ export default {
   data () {
     return {
       result: '',
+      debugInfo: '',
       options: {
         enableBasicAutocompletion: true,
         showGutter: true
@@ -100,7 +134,8 @@ export default {
       language: 'c_cpp',
       editorReference: '',
       resultEditorReference: '',
-      loadedAlone: true
+      loadedAlone: true,
+      theme: 'dawn'
     }
   },
   mounted () {
@@ -189,7 +224,7 @@ export default {
       require('brace/theme/twilight')
       require('brace/theme/terminal')
       require('brace/theme/cobalt')
-      require('brace/theme/eclipse')      
+      require('brace/theme/eclipse')     
       require('brace/theme/dawn')      
       require('brace/snippets/c_cpp') //snippet
       require('brace/ext/searchbox')
@@ -250,6 +285,8 @@ export default {
           e.preventDefault()
         }
       }
+    },
+    debugEditorInit() {
     },
     async onRunEvent () {
       // await this.onSaveEvent()
@@ -394,4 +431,26 @@ export default {
 </script>
 
 <style scoped>
+.preferences {
+  padding: 10px;
+  background-color: aliceblue;
+  margin-bottom: 0;
+  border: 1px solid #dadadb;
+}
+.preferences select {
+  background-color: azure;
+  color: #000;
+}
+.buttons-area {
+  width: 100%;
+  border: 2px solid #dadadb;
+  display: block;
+}
+
+.editor-border {
+  width: 100%;
+  background-color: aliceblue !important;
+  border: 1px solid #dadadb;
+  display: block;
+}
 </style>

@@ -8,7 +8,8 @@
             <b-collapse id="nav-collapse" is-nav>
             <b-navbar-nav>                    
                 <b-nav-item to="/problems" v-if="isAuthenticated" class="link">Problems</b-nav-item>
-                <b-nav-item to="/editor" class="link">Editor (Test)</b-nav-item>
+                <b-nav-item :to="getDailyProblemPath()" class="link"  v-if="isAuthenticated && getDailyProblemPath()" replace>Daily problem</b-nav-item>
+                <b-nav-item to="/Editor" class="link">Editor (Test)</b-nav-item>
             </b-navbar-nav>
 
             <!-- Right aligned nav items -->
@@ -44,9 +45,10 @@ export default {
   data () {
     return {
       isAuthenticated: false,
+      dailyProblemPath: ''
     }
   },
-  mounted () {
+  async mounted () {
     this.isAuthenticated = this.$firebase.auth().currentUser != null
     this.$subject.subscribe({
       next: (sender) => {
@@ -58,9 +60,25 @@ export default {
             this.isAuthenticated = true
             this.$router.push('/problems')
           }
+          case 'DAILY': {
+            this.dailyProblemPath = sender.daily ? `/problem/${sender.daily}?daily=1!==!` : ''
+          }
         }
       }
     })
+    // if (this.isAuthenticated) {
+    //   let loader = this.$loading.show()    
+    //   if (!this.dailyProblemPath) {
+    //     try {
+    //       problemUID = await this.$api.problem.getDailyProblem()
+    //       this.dailyProblemPath = `/problem/${problemUID}`
+    //     } catch (e) {
+    //       console.warn(e)
+    //     } finally {
+    //       loader.hide()
+    //     }
+    //   }
+    // }
   },
   methods: {
     async logout () {
@@ -75,6 +93,9 @@ export default {
       } finally {
         loader.hide()
       }
+    },
+    getDailyProblemPath () {
+      return this.dailyProblemPath
     }
   }
 }

@@ -27,7 +27,7 @@ const routes = [
         path: '/Editor',
         name: 'Editor',
         component: () => import("@/components/Editor"),
-        meta: { authOrTest: true }
+        meta: { requiresAuthOrAnonymousTest: true }
     },
     {
         path: '/',
@@ -45,6 +45,12 @@ const routes = [
         component: () => import("@/pages/AddClients"),
         meta: { requiresAuth: true }
     },
+    {
+        path: '/UpdateAccount',
+        name: 'UpdateAccount',
+        component: () => import("@/pages/UpdateAccount"),
+        meta: { requiresAuth: true }
+    }
 ]
 
 export default routes

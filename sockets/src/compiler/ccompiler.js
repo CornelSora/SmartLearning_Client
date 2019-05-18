@@ -82,7 +82,7 @@ class CCompiler {
                     if (currentTest123abc < (fLength123abc / 2)) {
                         printf("==========\\n");
                         printf("Test failed:\\n");
-                        printf("${functionDetails.tests[i].parameters.join(',')}\\n");
+                        printf("Parameters: ${functionDetails.tests[i].parameters.join(',')}\\n");
                         printf("Expected result: %d; Actual result: %d\\n", ${functionDetails.tests[i].expectedResult}, x${i});
                         printf("==========\\n");
                     } else {

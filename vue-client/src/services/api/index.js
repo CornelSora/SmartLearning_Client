@@ -1,6 +1,7 @@
 import axios from 'axios'
 import Account from './Account'
 import Problem from './Problem'
+import Paypal from './Paypal'
 import LocalStorage from 'local-storage'
 
 class Api {
@@ -22,6 +23,7 @@ class Api {
     }
     this.account = new Account(this.instance)
     this.problem = new Problem(this.instance)
+    this.paypal = new Paypal(this.instance)
   }
 }
 

@@ -128,13 +128,15 @@ export default {
     try {
       const result = await this.$api.problem.getAllProblems()
       if (result.ok) {
-        this.problems = result.result
+        this.problems = result.result.problems
         this.totalRows = this.problems.length
         this.problems.map(x => {
           if (x.content.length > 150) {
             x.content = x.content.substring(0,150) + "..."
           }
         })
+        const dailyResult = result.result.daily
+        this.$subject.next({type: 'DAILY', daily: dailyResult})
       } else {
         console.warn('something went wrong when I got the problems')
       }
