@@ -4,7 +4,9 @@
     <div id="app">
         <b-container fluid class="text-center">
           <div class="router">
-            <router-view/>
+            <keep-alive include="Problems,Editor">
+              <router-view/>
+            </keep-alive>
           </div>
         </b-container>
     </div>
@@ -37,7 +39,7 @@ a {
   -moz-osx-font-smoothing: grayscale;
   /* text-align: center; */
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 10px;
 }
 .router {
   margin-left: 10%;
@@ -62,6 +64,11 @@ a {
     color: #17a2b8 !important;
     background-color: #fff;
     border: 1px solid #dee2e6;
+}
+
+.dropdown-item:focus, .dropdown-item:hover {
+  color: #fff !important;
+  background-color: #17a2b8;
 }
 
 .page-item.active .page-link {

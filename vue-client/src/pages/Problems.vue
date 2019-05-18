@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="margin-top: 50px">
     <!-- <b-btn @click="addClient" class="btnLogout" variant="primary">Clients</b-btn> -->
     <!-- <b-btn @click="addProblem" class="btnLogout" variant="primary">Add problem</b-btn> -->
     <!-- <b-btn @click="logout" class="btnLogout" variant="primary">Logout</b-btn> -->
@@ -64,6 +64,7 @@
         :sort-desc.sync="sortDesc"
         :sort-direction="sortDirection"
         @filtered="onFiltered"
+        style="width: 100%; border: 1px solid #dadadb; display: block;"
       >
         <template slot="actions" slot-scope="row">
           <!-- We use @click.stop here to prevent a 'row-clicked' event from also happening -->
@@ -150,7 +151,10 @@ export default {
       this.currentPage = 1
     },
     info (item, index, target) {
-      this.$router.push(`problems/${item.UID}`)
+      console.log('-here')
+      //  this.$router.push({ name: 'ProblemDetails', params: { id: `${item.UID}` } })
+      //  this.$router.push(`problem/${item.UID}`)
+      this.$router.push(`problem/${item.UID}`)
     },
     addProblem () {
       this.$router.push('AddProblem')

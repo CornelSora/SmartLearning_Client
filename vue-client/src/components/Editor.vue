@@ -1,10 +1,13 @@
 <template>
   <div>
-    <b-select v-model="language">
-      <option>{{this.languages.python}}</option>
-      <option>{{this.languages.c_cpp}}</option>
-    </b-select>
-    <div style="border: 1px solid #f8f9fa;">
+    <div style="display: flex;">
+      <label>Language:</label>
+      <b-select v-model="language">
+        <option>{{this.languages.python}}</option>
+        <option>{{this.languages.c_cpp}}</option>
+      </b-select>
+    </div>
+    <div style="width: 100%; border: 1px solid #dadadb; display: block;">
       <editor
           v-model='content'
           @init='editorInit'
@@ -19,13 +22,13 @@
     </div>
     <center>
       <div v-if="!debugMode" style="width: 100%; border: 2px solid #dadadb; display: block;">
-        <b-btn @click='onSaveEvent'>Save</b-btn>
+        <b-btn @click='onSaveEvent' v-if="!this.loadedAlone">Save</b-btn>
         <b-btn @click='onRunEvent'>Run</b-btn>
         <b-btn @click='onCompileEvent' v-if="language !== this.languages.python">Compile</b-btn>
         <!-- <b-btn @click='onDebugEvent'>Debug</b-btn> -->
         <b-btn @click='onDebugEvent'><span class="glyphicon glyphicon-share-alt"></span>Debug</b-btn>
         <!-- <b-btn @click="onBeautifyEvent">Beautify</b-btn> -->
-        <b-btn @click='onTestEvent' v-if="language !== this.languages.python">Test</b-btn>
+        <b-btn @click='onTestEvent' v-if="language !== this.languages.python && !this.loadedAlone">Test</b-btn>
         <b-btn @click='onKillEvent'>Kill</b-btn>
       </div>
       <div v-else>
@@ -36,17 +39,19 @@
         <b-btn @click='onDebugStop'>Stop</b-btn>
       </div>
     </center>
-    <editor
-        v-model='result'
-        @init='resultEditorInit'
-        lang='text'
-        theme='dawn'
-        width='100%'
-        height='200px'
-        :readonly='true'
-        ref='resultEditor'
-        >
-    </editor>
+    <div style="width: 100%; border: 1px solid #dadadb; display: block;">
+      <editor
+          v-model='result'
+          @init='resultEditorInit'
+          lang='text'
+          theme='dawn'
+          width='100%'
+          height='200px'
+          :readonly='true'
+          ref='resultEditor'
+          >
+      </editor>
+    </div>
   </div>
 </template>
 
@@ -74,6 +79,7 @@ var breakpoints = []
 var breakpointsSent = []
 
 export default {
+  name: 'Editor',  
   data () {
     return {
       result: '',
@@ -84,32 +90,40 @@ export default {
       marker: null,
       debugMode: false,
       debugStarted: false,
-      content: 'Here write',
+      content: 'Write your code here',
       functions: [],
       problemID: this.$route.params.id,
       languages: {
         c_cpp: 'c_cpp',
         python: 'python'
       },
-      language: 'c_cpp'
+      language: 'c_cpp',
+      editorReference: '',
+      resultEditorReference: '',
+      loadedAlone: true
     }
   },
   mounted () {
-    this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
-    this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
+    // if (this.$userID) {
+    //   this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
+    //   this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
+    // }
     this.setListeners()
+    this.editorReference = this.$refs.editor
+    this.resultEditorReference = this.$refs.resultEditor
+    console.warn(`reference is: ${this.editorReference.editor}`)
   },
   methods: {
     setListeners () {
       socket.on('result', (cmdResult) => {
-        this.$refs.editor.editor.getSession().setAnnotations([])
+        this.editorReference.editor.getSession().setAnnotations([])
         this.result = cmdResult ? cmdResult : ''
         if (this.result.indexOf('error') > -1) {
           var lines = this.result.split('\n')
           for (var i = 0; i < lines.length; i++) {
             if (lines[i].indexOf('error') > -1) {
               var numbers = lines[i].split(':')
-              var oldAnnotations = this.$refs.editor.editor.getSession().getAnnotations()
+              var oldAnnotations = this.editorReference.editor.getSession().getAnnotations()
               var newAnnotation = {
                 row: parseInt(numbers[1]) - 1,
                 column: parseInt(numbers[2]),
@@ -117,14 +131,14 @@ export default {
                 type: 'error'
               }
               oldAnnotations.push(newAnnotation)
-              this.$refs.editor.editor.getSession().setAnnotations(oldAnnotations)
+              this.editorReference.editor.getSession().setAnnotations(oldAnnotations)
             }
           }
         }
         loader.hide()
       })
       socket.on('debugResult', (debugResult) => {
-        var resultEditor = this.$refs.resultEditor.editor
+        var resultEditor = this.resultEditorReference.editor
         var n = resultEditor.getSession().getValue().split('\n').length;
         if (debugResult.trim().length != 0) {
           this.result += (n > 1 ? '\n' : '') + debugResult.trim() + '\n'
@@ -138,8 +152,8 @@ export default {
         }, 100)
       })
       socket.on('colorLine', (lineNumber) => {
-        var resultEditor = this.$refs.resultEditor.editor
-        var editor = this.$refs.editor.editor
+        var resultEditor = this.resultEditorReference.editor
+        var editor = this.editorReference.editor
           if (this.marker) {
             editor.session.removeMarker(this.marker)
           }
@@ -148,12 +162,23 @@ export default {
       socket.on('debugFinished', () => {
         this.onDebugEnd()
       })
-      document.addEventListener("trigger", (e) => {
-        this.$refs.editor.editor.focus()
-        if (this.content) return
-        this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
-        this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
-      });
+      // document.addEventListener("trigger", (e) => {
+      //   this.editorReference.editor.focus()
+      //   if (this.content || !this.userID) return
+      //   this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
+      //   this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
+      // });
+      var subscription = this.$subject.subscribe({
+        next: (sender) => {
+          if (sender.type == 'EDITOR') {
+            console.log('--I received the problems--')
+            this.content = sender.userSolution
+            this.functions = sender.testFunctions
+            this.loadedAlone = false
+            subscription.unsubscribe()
+          }
+        }
+      })
     },
     editorInit () {
       require('brace/ext/language_tools') //language extension prerequsite...
@@ -171,9 +196,9 @@ export default {
       require('brace/ext/spellcheck')
       require('brace/ext/error_marker')
       require('brace/keybinding/emacs')
-      this.$refs.editor.editor.renderer.setShowGutter(false)
-
       var editor = this.$refs.editor.editor
+      editor.renderer.setShowGutter(false)
+
       editor.on('guttermousedown', (e) => {
         var target = e.domEvent.target;
         if (target.className.indexOf('ace_gutter-cell') == -1) {
@@ -284,7 +309,7 @@ export default {
       }
       if (!command) {
         // the command is sent from console
-        var resultEditor = this.$refs.resultEditor.editor
+        var resultEditor = this.resultEditorReference.editor
         const lines = resultEditor.getSession().getValue().split('\n')
         command = lines[lines.length - 1]
       }
@@ -299,7 +324,7 @@ export default {
     onDebugEnd () {
       this.debugMode = false
       this.debugStarted = false
-      var editor = this.$refs.editor.editor
+      var editor = this.editorReference.editor
       if (this.marker) {
         editor.session.removeMarker(this.marker)
       }
@@ -329,7 +354,7 @@ export default {
       socket.emit('test', this.functions[0], this.content)
     },
     async onSaveEvent () {
-      // this.$refs.editor.editor.getSession().setAnnotations([{
+      // this.editorReference.editor.getSession().setAnnotations([{
       //   row: 1,
       //   column: 0,
       //   text: "Error Message", // Or the Json reply from the parser 
@@ -359,7 +384,7 @@ export default {
     }
     // onBeautifyEvent () {
     //   console.warn(beautify)
-    //   beautify.beautify(this.$refs.editor.editor.getSession())
+    //   beautify.beautify(this.editorReference.editor.getSession())
     // }
   },
   components: {

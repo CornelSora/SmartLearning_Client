@@ -1,7 +1,7 @@
 import axios from 'axios'
 import Account from './Account'
 import Problem from './Problem'
-import * as LocalStorage from 'local-storage'
+import LocalStorage from 'local-storage'
 
 class Api {
   constructor () {

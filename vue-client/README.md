@@ -1,5 +1,3 @@
-# vue-firebase-tutorial
-
 > A Vue.js project using Firebase for authentication
 
 ## Build Setup

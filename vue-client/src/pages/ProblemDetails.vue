@@ -1,12 +1,13 @@
 <template>
   <div>
-    <!-- <b-btn @click="goToProblems" class="btnLogout" variant="primary">Problems</b-btn> -->
+    <center>
+      <h2 class="info">{{ problem.name }}</h2>
+    </center>
     <b-tabs class="problem-details">
         <b-tab title="Problem content" active>
           <b-media v-if="problem">
             <br/>
             <b>
-              <h2 class="mt-0 info">{{ problem.name }}</h2>
               <p>Difficulty: {{ problem.difficulty }}</p>
             </b>
             <pre class="problem-content">
@@ -67,7 +68,7 @@
             </div>
           </b-media>
         </b-tab>
-        <b-tab title="Editor" @click="trigger">
+        <b-tab title="Editor" @click="editorSelected"> <!--  @click="trigger" -->
             <EditorComponent />
         </b-tab>
     </b-tabs>
@@ -96,7 +97,7 @@ export default {
           this.problem.tests = this.problem.functions.map(x => x.tests)[0]
           this.problem.tests = this.problem.tests.slice(0, this.problem.tests.length / 2)
         }
-        this.solution = this.$api.problem.getUserSolution()
+        //  this.solution = this.$api.problem.getUserSolution()
       } else {
         console.warn('something went wrong when I got the problems')
       }
@@ -110,9 +111,16 @@ export default {
     goToProblems() {
       this.$router.push({ path: '/problems' })
     },
-    trigger() {
-      document.dispatchEvent(new Event("trigger"))
+    editorSelected () {
+        this.$subject.next({
+          type: 'EDITOR',
+          userSolution: this.problem.solution,
+          testFunctions: this.problem.functions
+        })
     }
+    // trigger() {
+    //   document.dispatchEvent(new Event("trigger"))
+    // }
   },
   components: {
     EditorComponent

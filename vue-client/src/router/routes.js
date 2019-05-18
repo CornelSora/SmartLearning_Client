@@ -1,3 +1,5 @@
+import Problems from "@/pages/Problems"
+
 const routes = [
     {
         path: '*',
@@ -6,11 +8,11 @@ const routes = [
     {
         path: '/Problems',
         name: 'Problems',
-        component: () => import("@/pages/Problems"),
+        component: Problems,
         meta: { requiresAuth: true }
     },
     {
-        path: '/Problems/:id',
+        path: '/Problem/:id',
         name: 'ProblemDetails',
         component: () => import("@/pages/ProblemDetails"),
         meta: { requiresAuth: true }
@@ -20,6 +22,12 @@ const routes = [
         name: 'AddProblem',
         component: () => import("@/pages/AddProblem"),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/Editor',
+        name: 'Editor',
+        component: () => import("@/components/Editor"),
+        meta: { authOrTest: true }
     },
     {
         path: '/',

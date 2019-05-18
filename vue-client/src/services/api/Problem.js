@@ -4,10 +4,8 @@ class Problem extends Base {
   async getAllProblems () {
     try {
       const result = await this.http.get('/problems')
-      debugger
       return super.ok(result)
     } catch (e) {
-      debugger
       return super.error(e)
     } finally {
     }
@@ -59,13 +57,13 @@ class Problem extends Base {
     }
   }
 
-  getUserSolution() {
-    return this._userSolution
-  }
+  // getUserSolution() {
+  //   return this._userSolution
+  // }
 
-  getProblemFunctions() {
-    return this._functions
-  }
+  // getProblemFunctions() {
+  //   return this._functions
+  // }
 }
 
 export default Problem

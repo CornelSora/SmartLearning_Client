@@ -13,6 +13,7 @@ import Loading from 'vue-loading-overlay'
 // Import stylesheet
 import 'vue-loading-overlay/dist/vue-loading.css'
 import * as LocalStorage from 'local-storage'
+import { Subject } from 'rxjs'
 
 Vue.use(BootstrapVue)
 Vue.use(Loading)
@@ -26,9 +27,11 @@ firebase.initializeApp(config);
 
 const isOnline = process.env.IS_ONLINE;
 Vue.prototype.$isOnline = isOnline;
+Vue.prototype.$subject = new Subject()
 
 Vue.prototype.$token = null;
-
+Vue.prototype.$localStorage = LocalStorage;
+Vue.prototype.$userID = ''
 let app;
 firebase.auth().onAuthStateChanged((user) => {
   Vue.prototype.$userID = user ? user.uid: ''
@@ -41,8 +44,12 @@ firebase.auth().onAuthStateChanged((user) => {
     })
   }
   if (user) {
-    user.getIdToken(true).then(function(idToken) {
+    user.getIdToken(true).then((idToken) => {
+      var isLoginMethod = !LocalStorage.get('headerToken')
       LocalStorage.set('headerToken', idToken)
+      if (idToken && isLoginMethod) {
+        Vue.prototype.$subject.next({ type: 'REDIRECT_PROBLEMS'})
+      }
     })
   }
 })

@@ -1,10 +1,11 @@
 <template>
   <b-container class="login-container">
-    <h3>Sign in</h3>
+    <h3 style="margin-bottom: 20px">Sign in</h3>
     <b-form-input
       type="text"
       placeholder="Email"
       v-model="email"
+      class="login-form"
     /><br/>
     <b-form-input
       type="password"
@@ -41,7 +42,7 @@ export default {
         let user = await this.$firebase
           .auth()
           .signInWithEmailAndPassword(this.email, this.password)
-        this.$router.replace('problems')
+        //  this.$subject.next('LOGIN')
       } catch (e) {
         this.error = e.message
       } finally {
@@ -55,5 +56,11 @@ export default {
 <style>
 .login-container {
   text-align: center;
+  margin-top: 10%;
+}
+.login-form {
+  width: 100%;
+  border: 1px solid #dadadb;
+  display: block;
 }
 </style>
