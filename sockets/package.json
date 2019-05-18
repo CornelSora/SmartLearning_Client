@@ -4,7 +4,6 @@
     "description": "Socket server to execute code",
     "scripts": {
         "start:build": "node dist",
-        "precommit": "lint-staged",
         "prestart": "npm run build",
         "lint": "eslint src test; exit 0",
         "lint:fix": "eslint src test --fix; exit 0",

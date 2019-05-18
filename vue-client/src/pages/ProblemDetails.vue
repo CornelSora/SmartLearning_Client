@@ -1,12 +1,12 @@
 <template>
   <div>
-    <b-btn @click="goToProblems" class="btnLogout" variant="primary">Problems</b-btn>
+    <!-- <b-btn @click="goToProblems" class="btnLogout" variant="primary">Problems</b-btn> -->
     <b-tabs class="problem-details">
         <b-tab title="Problem content" active>
           <b-media v-if="problem">
             <br/>
             <b>
-              <h2 class="mt-0">{{ problem.name }}</h2>
+              <h2 class="mt-0 info">{{ problem.name }}</h2>
               <p>Difficulty: {{ problem.difficulty }}</p>
             </b>
             <pre class="problem-content">
@@ -30,7 +30,7 @@
                     <td v-if="fct.parameters && fct.parameters.length > 0">
                       <!-- {{fct.parameters.map(x => x.parameterType).join(',')}} -->
                       <table class="table-bordered">
-                        <thead>
+                        <thead class="thead-light">
                           <th>Type</th>
                           <th>Details</th>
                         </thead>
@@ -97,7 +97,6 @@ export default {
           this.problem.tests = this.problem.tests.slice(0, this.problem.tests.length / 2)
         }
         this.solution = this.$api.problem.getUserSolution()
-        console.log(this.problem)
       } else {
         console.warn('something went wrong when I got the problems')
       }

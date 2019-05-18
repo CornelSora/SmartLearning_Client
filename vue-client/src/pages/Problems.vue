@@ -1,8 +1,8 @@
 <template>
   <div>
-    <b-btn @click="addClient" class="btnLogout" variant="primary">Clients</b-btn>
-    <b-btn @click="addProblem" class="btnLogout" variant="primary">Add problem</b-btn>
-    <b-btn @click="logout" class="btnLogout" variant="primary">Logout</b-btn>
+    <!-- <b-btn @click="addClient" class="btnLogout" variant="primary">Clients</b-btn> -->
+    <!-- <b-btn @click="addProblem" class="btnLogout" variant="primary">Add problem</b-btn> -->
+    <!-- <b-btn @click="logout" class="btnLogout" variant="primary">Logout</b-btn> -->
     <center>
       <h2>List of problems</h2>
     </center>
@@ -14,7 +14,7 @@
             <b-input-group>
               <b-form-input v-model="filter" placeholder="Type to Search" />
               <b-input-group-append>
-                <b-btn :disabled="!filter" @click="filter = ''" variant="primary">Clear</b-btn>
+                <b-btn :disabled="!filter" @click="filter = ''" variant="info">Clear</b-btn>
               </b-input-group-append>
             </b-input-group>
           </b-form-group>
@@ -25,7 +25,7 @@
               <b-form-select v-model="sortBy" :options="sortOptions">
                 <option slot="first" :value="null">-- none --</option>
               </b-form-select>
-              <b-form-select :disabled="!sortBy" v-model="sortDesc" slot="append">
+              <b-form-select :disabled="!sortBy" v-model="sortDesc" slot="append" variant="info">
                 <option :value="false">Asc</option>
                 <option :value="true">Desc</option>
               </b-form-select>
@@ -67,7 +67,7 @@
       >
         <template slot="actions" slot-scope="row">
           <!-- We use @click.stop here to prevent a 'row-clicked' event from also happening -->
-          <b-button size="sm" @click.stop="info(row.item, row.index, $event.target)" class="mr-1" variant="primary">
+          <b-button size="sm" @click.stop="info(row.item, row.index, $event.target)" class="mr-1" variant="info">
             Details
           </b-button>
         </template>
@@ -81,8 +81,8 @@
       </b-table>
 
       <b-row>
-        <b-col md="6" class="my-1">
-          <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" class="my-0" />
+        <b-col md="6" class="my-1" variant="info">
+          <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" class="mr-1"  />
         </b-col>
       </b-row>
     </b-container>
@@ -144,17 +144,6 @@ export default {
     }
   },
   methods: {
-    async logout () {
-      let loader = this.$loading.show()
-      try {
-        await this.$firebase.auth().signOut()
-        this.$router.replace('/')
-      } catch (e) {
-        console.warn(e)
-      } finally {
-        loader.hide()
-      }
-    },
     onFiltered (filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
       this.totalRows = filteredItems.length

@@ -56,8 +56,6 @@
 
 <script>
 import FunctionTest from '@/components/FunctionTest'
-console.log(FunctionTest)
-
 
 export default {
   data() {

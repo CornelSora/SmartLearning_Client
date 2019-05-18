@@ -30,7 +30,8 @@ class Listener {
                 this.processRef = cmd.get(command);
                 this.processRef.stdout.on(
                     'data', (data) => {
-                        if (data.indexOf("exited") > -1 || data.indexOf('Quit') > -1) {
+                        logger.info(`Received data from gdb for: ${this.socket.id}`);
+                        if (data.indexOf("exited") > -1 || data.indexOf('Quit') > -1 || data.indexOf('quit') > -1) {
                             this.socket.emit("debugFinished");
                             this.compiler.removeFiles();
                             return;
@@ -38,7 +39,6 @@ class Listener {
                         try {
                             this.socket.emit("debugResult", data);
                             var lineToColor = this.compiler.getGDBLine(data, code.code, code.language);
-                            logger.info(`Emitting to color the line ${lineToColor} for this.socket: ${this.socket.id}`);
                             if (lineToColor) {
                                 this.socket.emit("colorLine", lineToColor);
                             }
@@ -62,6 +62,9 @@ class Listener {
                 if (!this.processRef) return;
                 this.processRef.stdin.write(`${command}
                 `);
+                if (command == 'quit') {
+                    this.compiler.removeFiles();
+                }
             } catch (e) {
                 logger.error(`============ERROR sending debug command: ${command} for this.socket: ${this.socket.id}==============`);
                 logger.error(e.toString());

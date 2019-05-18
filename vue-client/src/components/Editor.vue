@@ -4,38 +4,43 @@
       <option>{{this.languages.python}}</option>
       <option>{{this.languages.c_cpp}}</option>
     </b-select>
-    <editor
-        v-model='content'
-        @init='editorInit'
-        :lang='language'
-        theme='twilight'
-        width='100%'
-        height='500px'
-        :options='options'
-        ref='editor'
-        >
-    </editor>
-    <div v-if="!debugMode">
-      <b-btn @click='onSaveEvent'>Save</b-btn>
-      <b-btn @click='onRunEvent'>Run</b-btn>
-      <b-btn @click='onCompileEvent' v-if="language !== this.languages.python">Compile</b-btn>
-      <b-btn @click='onDebugEvent'>Debug</b-btn>
-      <b-btn @click="onBeautifyEvent">Beautify</b-btn>
-      <b-btn @click='onTestEvent' v-if="language !== this.languages.python">Test</b-btn>
-      <b-btn @click='onKillEvent'>Kill</b-btn>
+    <div style="border: 1px solid #f8f9fa;">
+      <editor
+          v-model='content'
+          @init='editorInit'
+          :lang='language'
+          theme='dawn'
+          width='100%'
+          height='500px'
+          :options='options'
+          ref='editor'
+          >
+      </editor>
     </div>
-    <div v-else>
-      <b-btn @click='onDebugStart' :disabled="debugStarted">Start</b-btn>
-      <b-btn @click='onDebugNext'>Next</b-btn>
-      <b-btn @click='onDebugContinue'>Continue</b-btn>
-      <b-btn @click='onDebugInfoLocals'>Info locals</b-btn>
-      <b-btn @click='onDebugStop'>Stop</b-btn>
-    </div>
+    <center>
+      <div v-if="!debugMode" style="width: 100%; border: 2px solid #dadadb; display: block;">
+        <b-btn @click='onSaveEvent'>Save</b-btn>
+        <b-btn @click='onRunEvent'>Run</b-btn>
+        <b-btn @click='onCompileEvent' v-if="language !== this.languages.python">Compile</b-btn>
+        <!-- <b-btn @click='onDebugEvent'>Debug</b-btn> -->
+        <b-btn @click='onDebugEvent'><span class="glyphicon glyphicon-share-alt"></span>Debug</b-btn>
+        <!-- <b-btn @click="onBeautifyEvent">Beautify</b-btn> -->
+        <b-btn @click='onTestEvent' v-if="language !== this.languages.python">Test</b-btn>
+        <b-btn @click='onKillEvent'>Kill</b-btn>
+      </div>
+      <div v-else>
+        <b-btn @click='onDebugStart' :disabled="debugStarted">Start</b-btn>
+        <b-btn @click='onDebugNext'>Next</b-btn>
+        <b-btn @click='onDebugContinue'>Continue</b-btn>
+        <b-btn @click='onDebugInfoLocals'>Info locals</b-btn>
+        <b-btn @click='onDebugStop'>Stop</b-btn>
+      </div>
+    </center>
     <editor
         v-model='result'
         @init='resultEditorInit'
         lang='text'
-        theme='terminal'
+        theme='dawn'
         width='100%'
         height='200px'
         :readonly='true'
@@ -47,11 +52,23 @@
 
 <script>
 import editor from 'vue2-ace-editor'
-import io from 'socket.io-client';
+import io from 'socket.io-client'
 import brace from 'brace'
+import jwt from 'jsonwebtoken'
+const SECRET_KEY = '1@CNC@Debug1#'
+
 const Range = brace.acequire('ace/range').Range
 
-const socket = io(process.env.SOCKET_SERVER);
+var utc = new Date().toJSON().slice(0,10).replace(/-/g,'/');
+var token = jwt.sign({date: utc}, SECRET_KEY);
+
+const socket = io(process.env.SOCKET_SERVER, {
+  query: {token: token}
+});
+const socketErrorMessage = `It seems like there is an error with the compiler.
+Please refresh the page.
+If the error persists try again later. Thank you!`
+
 var loader = { hide: () => { console.log('nothing') } }
 var breakpoints = []
 var breakpointsSent = []
@@ -80,7 +97,6 @@ export default {
   mounted () {
     this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
     this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
-    console.log('===============mounted================')
     this.setListeners()
   },
   methods: {
@@ -147,12 +163,14 @@ export default {
       require('brace/mode/less')
       require('brace/theme/twilight')
       require('brace/theme/terminal')
+      require('brace/theme/cobalt')
+      require('brace/theme/eclipse')      
+      require('brace/theme/dawn')      
       require('brace/snippets/c_cpp') //snippet
       require('brace/ext/searchbox')
       require('brace/ext/spellcheck')
       require('brace/ext/error_marker')
       require('brace/keybinding/emacs')
-      //  beautify = require('brace/ext/beautify').beautify
       this.$refs.editor.editor.renderer.setShowGutter(false)
 
       var editor = this.$refs.editor.editor
@@ -174,11 +192,9 @@ export default {
           breakpoints.push(row)
         } else {
           e.editor.session.clearBreakpoint(row)
-          let breakNr = breakpoints.indexOf(row)
-          breakpoints.splice(breakNr, 1)
-          console.warn(this.debugStarted)
+          breakpoints.splice(breakpoints.indexOf(row), 1)
           if (this.debugStarted) {
-            this.removeBreakpointFromGdb(breakNr + 1)
+            this.removeBreakpointFromGdb(breakpointsSent.indexOf(row) + 1)
           }
         }
         e.stop()
@@ -212,23 +228,39 @@ export default {
     },
     async onRunEvent () {
       // await this.onSaveEvent()
+      if (!socket.connected) {
+        this.result = socketErrorMessage
+        return
+      }
       loader = this.$loading.show()
       this.result = 'Running...'
       socket.emit('run', { code: this.content, language: this.language })
     },
     async onCompileEvent () {
       // await this.onSaveEvent()
+       if (!socket.connected) {
+        this.result = socketErrorMessage
+        return
+      }
       loader = this.$loading.show()
       this.result = 'Running...'
       socket.emit('compile', { code: this.content, language: this.language })
     },
     onDebugEvent () {
+      if (!socket.connected) {
+        this.result = socketErrorMessage
+        return
+      }
       loader = this.$loading.show()
       this.result = ''
       this.debugMode = true
       socket.emit('debugStart', { code: this.content, language: this.language })
     },
     onKillEvent () {
+      if (!socket.connected) {
+        this.result = socketErrorMessage
+        return
+      }
       socket.emit('killProcess')
     },
     sendBreakpoints () {
@@ -243,10 +275,13 @@ export default {
     },
     removeBreakpointFromGdb(breakpoint) {
       let cmd = `del ${breakpoint}`
-      console.log(cmd)
       this.sendDebugCommand(cmd)
     },
     sendDebugCommand (command) {
+      if (!socket.connected) {
+        this.result = socketErrorMessage
+        return
+      }
       if (!command) {
         // the command is sent from console
         var resultEditor = this.$refs.resultEditor.editor
@@ -285,6 +320,10 @@ export default {
       }
     },
     onTestEvent () {
+      if (!socket.connected) {
+        this.result = socketErrorMessage
+        return
+      }
       loader = this.$loading.show()
       this.result = ''
       socket.emit('test', this.functions[0], this.content)
@@ -317,11 +356,11 @@ export default {
         this.sendDebugCommand('exit()')
         this.onDebugEnd()
       }
-    },
-    onBeautifyEvent () {
-      // console.warn(beautify)
-      // beautify.beautify(this.$refs.editor.editor.getSession())
     }
+    // onBeautifyEvent () {
+    //   console.warn(beautify)
+    //   beautify.beautify(this.$refs.editor.editor.getSession())
+    // }
   },
   components: {
     editor
