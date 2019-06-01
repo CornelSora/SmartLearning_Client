@@ -24,11 +24,14 @@ class PyCompiler {
         })
     }
 
-    async run(code) {
+    async run(code, fileName) {
+        if (!fileName) {
+            fileName = this._fileName
+        }
         return new Promise(async (resolve, reject) => {
             try {
-                await this.writeFile(this._fileName + ".py", code);
-                cmd.get(`py ${this._fileName}.py`, function(err, data, stderr) {
+                await this.writeFile(fileName + ".py", code);
+                cmd.get(`py ${fileName}.py`, function(err, data, stderr) {
                     if (stderr) {
                         reject(stderr);
                     } else {
@@ -40,6 +43,84 @@ class PyCompiler {
             } finally {
             }
         })
+    }
+
+    async test(functionDetails, code = '', filename = null) {
+        if (!filename) {
+            filename = this._fileName
+        }
+        var testFileName = filename + "test";
+        try {
+            if (!code) {
+                code = await this.readFile(filename + '.py');
+            } else {
+                await this.writeFile(filename + '.py', code);
+            }
+            var testZone = '';
+            var listOfParameters = '';
+            testZone += `fLength123abc=${functionDetails.tests.length};`
+            testZone += `currentTest123abc = 0;`
+            for (var i = 0; i < functionDetails.tests.length; i++) {
+                listOfParameters = '';
+                for (var j = 0; j < functionDetails.tests[i].parameters.length; j++) {
+                    if (j > 0) {
+                        listOfParameters += ','
+                    }
+                    var paramType = functionDetails.parameters[j].parameterType;
+                    if (paramType.indexOf('*') > -1) {
+                        var parameterArray = functionDetails.tests[i].parameters[j].replace('{', '[');
+                        parameterArray = parameterArray.replace('}', ']');
+                        testZone += `param${i} = ${parameterArray};`
+                        listOfParameters += `param${i}`
+                    } else {
+                        listOfParameters += `${functionDetails.tests[i].parameters[j]}`
+                    }
+                }
+                //  testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${functionDetails.tests[i].parameters.join(',')});
+                testZone += `x${i} = ${functionDetails.name}(${listOfParameters});
+    if ${functionDetails.tests[i].expectedResult} != x${i}:
+        if currentTest123abc < (fLength123abc / 2):
+            print("==========");
+            print("Test failed:");
+            print("Parameters: ${functionDetails.tests[i].parameters.join(',')}");
+            print("Expected result: {a}; Actual result: {b}".format(a = ${functionDetails.tests[i].expectedResult}, b = x${i}));
+            print("==========");
+        else:
+            print("Your code failed a hidden test: test${i + 1}\\n");
+        currentTest123abc+=1;`
+                // printf("%d, %d\n", x${i}, ${functionDetails.tests[i].expectedResult});
+                // printf("%d == %d ? ", x${i}, ${functionDetails.tests[i].expectedResult});`
+            }
+            var testCode = `from ${filename} import ${functionDetails.name}
+
+if __name__ == '__main__':
+    ${testZone}`;
+            try {
+                var errors = await this.run(testCode, testFileName);
+                if (!errors) {
+                    var responseMsg = "Your code passed the tests!\n";
+                    for (var i = 0; i < functionDetails.tests.length; i++) {
+    responseMsg += `Test ${i + 1}: 
+    Parameters: ${functionDetails.tests[i].parameters.join(',')}
+    Expected result: ${functionDetails.tests[i].expectedResult}\n`;
+                    }
+                    return responseMsg;
+                } else {
+                    return errors;
+                }
+            } catch (error) {
+                return error
+            }
+        } catch (e) {
+            throw e;
+        } finally {
+            try {
+                this.removeFiles(`${filename}.py`);
+                this.removeFiles(`${testFileName}.py`);
+            } catch (err) {
+                throw err
+            }
+        }
     }
 
     getGDBLine(data, code) {

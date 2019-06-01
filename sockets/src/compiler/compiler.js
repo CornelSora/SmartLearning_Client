@@ -33,6 +33,7 @@ functionDetails = {
 class Compiler {
     constructor(fileName) {
         fileName = fileName.replace('-', '');
+        fileName = fileName.replace('_', '');
         this.cCompiler = new Ccompiler(fileName);
         this.pCompiler = new Pycompiler(fileName);
         this._fileName = fileName;
@@ -62,9 +63,13 @@ class Compiler {
         }
     }
 
-    async test(functionDetails, code) {
+    async test(functionDetails, code, language) {
         try {
-            return await this.cCompiler.test(functionDetails, code);
+            if (language == "c_cpp") {
+                return await this.cCompiler.test(functionDetails, code);
+            } else if (language == "python") {
+                return await this.pCompiler.test(functionDetails, code);
+            }
         } catch (e) {
             throw e
         }

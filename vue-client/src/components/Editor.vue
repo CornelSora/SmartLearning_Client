@@ -49,7 +49,7 @@
         <!-- <b-btn @click='onDebugEvent'>Debug</b-btn> -->
         <b-btn @click='onDebugEvent' variant="danger"><span class="glyphicon glyphicon-share-alt"></span>Debug mode</b-btn>
         <!-- <b-btn @click="onBeautifyEvent">Beautify</b-btn> -->
-        <b-btn @click='onTestEvent' v-if="language !== this.languages.python && !this.loadedAlone" variant="primary">Test</b-btn>
+        <b-btn @click='onTestEvent' v-if="!this.loadedAlone" variant="primary">Test</b-btn> <!-- language !== this.languages.python && -->
         <b-btn @click='onKillEvent'>Kill</b-btn>
       </div>
       <div v-else class="buttons-area">
@@ -206,11 +206,13 @@ export default {
       var subscription = this.$subject.subscribe({
         next: (sender) => {
           if (sender.type == 'EDITOR') {
-            console.log('--I received the problems--')
             this.content = sender.userSolution
             this.functions = sender.testFunctions
             this.loadedAlone = false
-            subscription.unsubscribe()
+            //  subscription.unsubscribe()
+          } else {
+            this.loadedAlone = true
+            //  subscription.unsubscribe()
           }
         }
       })
@@ -388,7 +390,7 @@ export default {
       }
       loader = this.$loading.show()
       this.result = ''
-      socket.emit('test', this.functions[0], this.content)
+      socket.emit('test', this.functions[0], this.content, this.language)
     },
     async onSaveEvent () {
       // this.editorReference.editor.getSession().setAnnotations([{

@@ -89,17 +89,17 @@ class Listener {
     }
 
     listenTestCodeCommand() {
-        this.socket.on("test", async (functionDetails, code) => {
+        this.socket.on("test", async (functionDetails, code, language) => {
             try {
                 logger.info(`Testing user's code from this.socket: ${this.socket.id}`)
-                var testResult = await this.compiler.test(functionDetails, code);
+                var testResult = await this.compiler.test(functionDetails, code, language);
                 this.socket.emit("result", testResult);
             } catch (e) {
                 logger.error(`============ERROR testing code for this.socket: ${this.socket.id}==============`);
                 logger.error(e.toString());
                 this.socket.emit("result", e.toString());
             } finally {
-                this.compiler.removeFiles();
+                //  this.compiler.removeFiles();
             }
         });
     }

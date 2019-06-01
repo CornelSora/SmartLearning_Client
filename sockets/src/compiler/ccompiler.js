@@ -35,7 +35,11 @@ class CCompiler {
             try {
                 await this.compile(code, fileName);
                 cmd.get(`${fileName}.exe timeout /t 1`, function(err, data, stderr) {
-                    resolve(data)
+                    if (stderr) {
+                        reject(stderr)
+                    } else {
+                        resolve(data)
+                    }
                 })
             } catch (e) {
                 reject(e);

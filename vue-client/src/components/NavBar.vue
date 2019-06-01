@@ -9,7 +9,7 @@
             <b-navbar-nav>                    
                 <b-nav-item to="/problems" v-if="isAuthenticated" class="link">Problems</b-nav-item>
                 <b-nav-item :to="getDailyProblemPath()" class="link"  v-if="isAuthenticated && getDailyProblemPath()" replace>Daily problem</b-nav-item>
-                <b-nav-item to="/Editor" class="link">Editor (Test)</b-nav-item>
+                <b-nav-item to="/Editor" class="link" @click="editTest_Clicked()">Editor (Test)</b-nav-item>
             </b-navbar-nav>
 
             <!-- Right aligned nav items -->
@@ -96,6 +96,11 @@ export default {
     },
     getDailyProblemPath () {
       return this.dailyProblemPath
+    },
+    editTest_Clicked() {
+      this.$subject.next({
+        type: 'EDITOR_TEST'
+      })
     }
   }
 }
