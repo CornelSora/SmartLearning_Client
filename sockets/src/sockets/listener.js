@@ -47,6 +47,9 @@ class Listener {
                         }
                     }
                 );
+                this.processRef.stdout.on('end', (data) => {
+                    console.log('ended')
+                })
             } catch(e) {
                 this.socket.emit("debugResult", e.toString());            
                 logger.error(`============ERROR on debuggin for this.socket: ${this.socket.id}==============`);
@@ -99,7 +102,7 @@ class Listener {
                 logger.error(e.toString());
                 this.socket.emit("result", e.toString());
             } finally {
-                //  this.compiler.removeFiles();
+                this.compiler.removeFiles();
             }
         });
     }

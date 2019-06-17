@@ -54,42 +54,47 @@
       </div>
       <div v-else class="buttons-area">
         <b-btn @click='onDebugStart' :disabled="debugStarted">Start</b-btn>
-        <b-btn @click='onDebugNext'>Next</b-btn>
-        <b-btn @click='onDebugContinue'>Continue</b-btn>
-        <b-btn @click='onDebugInfoLocals'>Info locals</b-btn>
-        <b-btn @click='onDebugStop'>Stop</b-btn>
+        <b-btn @click='onDebugNext' :disabled="!debugStarted">Next</b-btn>
+        <b-btn @click='onDebugContinue' :disabled="!debugStarted">Continue</b-btn>
+        <b-btn @click='onDebugInfoLocals' :disabled="!debugStarted">Info locals</b-btn>
+        <b-btn @click='onDebugInfoArgs' :disabled="!debugStarted">Info args</b-btn>
+        <b-btn @click='onDebugStop' :disabled="!debugStarted">Stop</b-btn>
       </div>
     </center>
     <div class="editor-border">
       <editor
-          v-model='result'
-          @init='resultEditorInit'
-          lang='batchfile'
-          :theme='theme'
-          :width='debugMode ? "49%" : "100%"'
-          height='200px'
-          :readonly='true'
-          ref='resultEditor'
-          >
+        v-model='result'
+        @init='resultEditorInit'
+        lang='batchfile'
+        :theme='theme'
+        :width='debugMode ? "50%" : "100%"'
+        style="float: left"
+        height='200px'
+        :readonly='true'
+        ref='resultEditor'
+        >
       </editor>
-      <!-- <editor
-          v-model='debugInfo'
-          @init='debugEditorInit'
-          lang='batchfile'
-          :theme='theme'
-          width='49%'
-          height='200px'
-          :readonly='true'
-          ref='debugEditor'
-          style="float: right"
-          >
-      </editor> -->
+      <editor
+        v-if="debugMode"
+        v-model='debugInfo'
+        @init='debugEditorInit'
+        lang='batchfile'
+        :theme='theme'
+        width='49%'
+        height='200px'
+        :readonly='true'
+        ref='debugEditor'
+        style="float: right"
+        >
+      </editor>
     </div>
   </div>
 </template>
 
 <script>
 import editor from 'vue2-ace-editor'
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
 import io from 'socket.io-client'
 import brace from 'brace'
 import jwt from 'jsonwebtoken'
@@ -108,6 +113,7 @@ Please refresh the page.
 If the error persists try again later. Thank you!`
 
 var loader = { hide: () => { console.log('nothing') } }
+var isTimeout = false
 var breakpoints = []
 var breakpointsSent = []
 
@@ -124,18 +130,20 @@ export default {
       marker: null,
       debugMode: false,
       debugStarted: false,
-      content: 'Write your code here',
+      content: (this.language == 'python' ? '#' : '//') + 'Write your code here',
       functions: [],
       problemID: this.$route.params.id,
       languages: {
         c_cpp: 'c_cpp',
         python: 'python'
       },
-      language: 'c_cpp',
       editorReference: '',
       resultEditorReference: '',
       loadedAlone: true,
-      theme: 'dawn'
+      language: this.$settings.getLanguage() ? this.$settings.getLanguage() : 'c_cpp',
+      theme: this.$settings.getTheme() ? this.$settings.getTheme() : 'dawn',
+      defaultMesage: 'Write your code here',
+      isInfoLocalsCommand: false
     }
   },
   mounted () {
@@ -143,14 +151,32 @@ export default {
     //   this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
     //   this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
     // }
+    var subscription = this.$subject.subscribe({
+      next: (sender) => {
+        if (sender.type == 'EDITOR') {
+          var localCode = this.$settings.getCode(this.language)
+          this.content = localCode ? localCode : sender.userSolution
+          this.functions = sender.testFunctions
+          this.setContent()
+          this.loadedAlone = false
+          //  subscription.unsubscribe()
+        } else {
+          this.loadedAlone = true
+          //  subscription.unsubscribe()
+        }
+      }
+    })
     this.setListeners()
     this.editorReference = this.$refs.editor
     this.resultEditorReference = this.$refs.resultEditor
-    console.warn(`reference is: ${this.editorReference.editor}`)
   },
   methods: {
     setListeners () {
       socket.on('result', (cmdResult) => {
+        if (isTimeout) {
+          isTimeout = false
+          return
+        }
         this.editorReference.editor.getSession().setAnnotations([])
         this.result = cmdResult ? cmdResult : ''
         if (this.result.indexOf('error') > -1) {
@@ -173,10 +199,20 @@ export default {
         loader.hide()
       })
       socket.on('debugResult', (debugResult) => {
+        if (isTimeout) {
+          isTimeout = false
+          return
+        }
         var resultEditor = this.resultEditorReference.editor
         var n = resultEditor.getSession().getValue().split('\n').length;
         if (debugResult.trim().length != 0) {
-          this.result += (n > 1 ? '\n' : '') + debugResult.trim() + '\n'
+          if (!this.isInfoLocalsCommand) {
+              this.result += (n > 1 ? '\n' : '') + debugResult.trim() + '\n'
+          } else {
+            var lngth = this.$refs.debugEditor.editor.getSession().getValue().split('\n').length;
+            this.debugInfo += (lngth > 1 ? '\n' : '') + debugResult.trim() + '\n'
+            this.isInfoLocalsCommand = false
+          }
         }
         setTimeout(() => {
           resultEditor.focus()
@@ -203,19 +239,6 @@ export default {
       //   this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
       //   this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
       // });
-      var subscription = this.$subject.subscribe({
-        next: (sender) => {
-          if (sender.type == 'EDITOR') {
-            this.content = sender.userSolution
-            this.functions = sender.testFunctions
-            this.loadedAlone = false
-            //  subscription.unsubscribe()
-          } else {
-            this.loadedAlone = true
-            //  subscription.unsubscribe()
-          }
-        }
-      })
     },
     editorInit () {
       require('brace/ext/language_tools') //language extension prerequsite...
@@ -289,6 +312,12 @@ export default {
       }
     },
     debugEditorInit() {
+      var resultEditor = this.$refs.debugEditor.editor
+      resultEditor.commands.on('exec', function(e) {
+        if (notEditable) {
+          e.preventDefault();
+        }
+      });
     },
     async onRunEvent () {
       // await this.onSaveEvent()
@@ -296,7 +325,7 @@ export default {
         this.result = socketErrorMessage
         return
       }
-      loader = this.$loading.show()
+      this.displayLoading()
       this.result = 'Running...'
       socket.emit('run', { code: this.content, language: this.language })
     },
@@ -306,7 +335,7 @@ export default {
         this.result = socketErrorMessage
         return
       }
-      loader = this.$loading.show()
+      this.displayLoading()
       this.result = 'Running...'
       socket.emit('compile', { code: this.content, language: this.language })
     },
@@ -315,7 +344,7 @@ export default {
         this.result = socketErrorMessage
         return
       }
-      loader = this.$loading.show()
+      this.displayLoading()
       this.result = ''
       this.debugMode = true
       socket.emit('debugStart', { code: this.content, language: this.language })
@@ -377,10 +406,17 @@ export default {
       this.sendDebugCommand('continue')
     },
     onDebugInfoLocals () {
+      this.isInfoLocalsCommand = true
       if (this.language == this.languages.c_cpp) {
         this.sendDebugCommand('info locals')
       } else if (this.language == this.languages.python) {
         this.sendDebugCommand('locals()')
+      }
+    },
+    onDebugInfoArgs () {
+      this.isInfoLocalsCommand = true
+      if (this.language == this.languages.c_cpp) {
+        this.sendDebugCommand('info args')
       }
     },
     onTestEvent () {
@@ -388,7 +424,7 @@ export default {
         this.result = socketErrorMessage
         return
       }
-      loader = this.$loading.show()
+      this.displayLoading()
       this.result = ''
       socket.emit('test', this.functions[0], this.content, this.language)
     },
@@ -399,12 +435,16 @@ export default {
       //   text: "Error Message", // Or the Json reply from the parser 
       //   type: "error" // also "warning" and "information"
       // }]);
-      let loader = this.$loading.show()
+      let loader = this.displayLoading()
       try {
+        let contentToSend = this.content
+        if (contentToSend && contentToSend.indexOf('\n') > -1) {
         //  const contentToSend = this.content.replace('\n', '\\n')
-        let contentToSend = this.content.split('\n').join('\\n')
-        contentToSend = contentToSend.split('"').join('\\\"')
+          contentToSend = this.content.split('\n').join('\\n')
+          contentToSend = contentToSend.split('"').join('\\\"')
+        }
         await this.$api.problem.saveProblemSolution(this.problemID, this.$userID, `${contentToSend}`)
+        this.$settings.setCode(this.content, this.language)
         this.result = "File saved"
       } catch (e) {
         console.warn(e)
@@ -420,14 +460,69 @@ export default {
         this.sendDebugCommand('exit()')
         this.onDebugEnd()
       }
+    },
+    onCancel () {
+      console.log('User cancelled the loader.')
+    },
+    displayLoading () {
+      loader = this.$loading.show()
+      setTimeout(() => {
+        if (loader.isActive) {
+          isTimeout = true
+          this.onKillEvent()
+          this.result = 'Event stopped due to timeout;\nYou could have an infinite loop or scanf in your code; (scanf is not allowed);'
+        }
+      }, 5000)
+      return loader
+    },
+    setContent () {
+      this.content = (!this.content || this.content.indexOf(this.defaultMesage) > -1) ? this.setDefaultContent() : this.content
+    },
+    setDefaultContent() {
+      var localCode = this.$settings.getCode(this.language)
+      if (localCode) {
+        return localCode
+      }
+      if (this.language == 'c_cpp') {
+        var functionDetails = this.functions[0]
+        var vars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
+        var params = ''
+        for (var i = 0; i < functionDetails.parameters.length; i++) {
+          if (i != functionDetails.parameters.length - 1) {
+            params += `${functionDetails.parameters[i].parameterType} ${vars[i]}, `
+          } else {
+            params += `${functionDetails.parameters[i].parameterType} ${vars[i]}`
+          }
+        }
+        var code = `#include<stdio.h>
+${functionDetails.returnType} ${functionDetails.name}(${params}) {
+  
+}
+
+int main() {
+  
+}`
+        return code
+      }
+      return '#Write your code here'
     }
     // onBeautifyEvent () {
     //   console.warn(beautify)
     //   beautify.beautify(this.editorReference.editor.getSession())
     // }
   },
+  watch: {
+    language: function (newLanguage, oldLanguage) {
+      this.content = this.setDefaultContent()
+      this.$settings.setLanguage(newLanguage)
+    },
+    theme: function (newTheme, oldTheme) {
+      this.$settings.setTheme(newTheme)
+    }
+  },
   components: {
-    editor
+    editor,
+    Loading
   }
 }
 </script>
@@ -448,11 +543,13 @@ export default {
   border: 2px solid #dadadb;
   display: block;
 }
-
 .editor-border {
   width: 100%;
   background-color: aliceblue !important;
   border: 1px solid #dadadb;
   display: block;
+}
+.ace_editor {
+  float: left;
 }
 </style>

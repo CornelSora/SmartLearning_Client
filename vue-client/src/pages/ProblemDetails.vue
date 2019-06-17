@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="problem-page">
     <center>
       <h2 class="info">{{ problem.name }}</h2>
     </center>
@@ -83,7 +83,8 @@ export default {
     return {
       problem: {},
       solution: null,
-      problemID: this.$route.params.id
+      problemID: this.$route.params.id,
+      isFirstTime: true
     }
   },
   async mounted () {
@@ -112,6 +113,8 @@ export default {
       this.$router.push({ path: '/problems' })
     },
     editorSelected () {
+      if (!this.isFirstTime) return
+      this.isFirstTime = false
         this.$subject.next({
           type: 'EDITOR',
           userSolution: this.problem.solution,
@@ -129,6 +132,9 @@ export default {
 </script>
 
 <style>
+.problem-page {
+  padding: 10px;
+}
 .problem-details {
     text-align: left;
 }

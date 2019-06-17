@@ -14,6 +14,7 @@ import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
 import * as LocalStorage from 'local-storage'
 import { Subject } from 'rxjs'
+import SettingsStorage from './services/SettingsStorage'
 
 Vue.use(BootstrapVue)
 Vue.use(Loading)
@@ -30,8 +31,11 @@ Vue.prototype.$isOnline = isOnline;
 Vue.prototype.$subject = new Subject()
 
 Vue.prototype.$token = null;
+Vue.prototype.$inviteToken = null;
 Vue.prototype.$localStorage = LocalStorage;
 Vue.prototype.$userID = ''
+Vue.prototype.$settings = new SettingsStorage()
+
 let app;
 firebase.auth().onAuthStateChanged((user) => {
   Vue.prototype.$userID = user ? user.uid: ''

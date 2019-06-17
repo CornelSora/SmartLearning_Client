@@ -84,6 +84,7 @@ class Compiler {
             } catch (e) {
                 reject(e);
             } finally {
+                this.removeFiles()
             }
         })
     }

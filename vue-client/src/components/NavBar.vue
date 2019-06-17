@@ -10,6 +10,7 @@
                 <b-nav-item to="/problems" v-if="isAuthenticated" class="link">Problems</b-nav-item>
                 <b-nav-item :to="getDailyProblemPath()" class="link"  v-if="isAuthenticated && getDailyProblemPath()" replace>Daily problem</b-nav-item>
                 <b-nav-item to="/Editor" class="link" @click="editTest_Clicked()">Editor (Test)</b-nav-item>
+                <b-nav-item to="/AddClient" class="link" v-if="isAuthenticated">Clients</b-nav-item>
             </b-navbar-nav>
 
             <!-- Right aligned nav items -->
@@ -109,5 +110,11 @@ export default {
 <style>
 .link {
   cursor: pointer !important;
+}
+.navbar-fixed-top {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
 }
 </style>

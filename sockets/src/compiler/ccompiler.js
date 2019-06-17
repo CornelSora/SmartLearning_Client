@@ -58,7 +58,9 @@ class CCompiler {
             if (!code) {
                 code = await this.readFile(filename + '.c');
             }
-            code = code.substring(0, code.indexOf('main') - 5);
+            if (code.indexOf('main') > -1) {
+                code = code.substring(0, code.indexOf('main') - 5);
+            }
             await this.writeFile(noMainFileName, code);
             var testZone = '';
             var listOfParameters = '';
@@ -178,8 +180,8 @@ class CCompiler {
 
     async removeFiles () {
         try {
-            await this.removeFile(`${this._fileName}.c`);
             await this.removeFile(`${this._fileName}.exe`);
+            await this.removeFile(`${this._fileName}.c`);
         } catch (e) {
             throw e
         }

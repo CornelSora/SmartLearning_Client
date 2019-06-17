@@ -11,11 +11,15 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
+  debugger
   let loader = Vue.$loading.show()
   // https://firebase.google.com/docs/auth/admin/verify-id-tokens
   const currentUser = firebase.auth().currentUser
 
-  this.$token = to.query.token
+  console.warn(to.query)
+
+  this.$inviteToken = to.query.inviteToken
+  let problemId = to.query.problem
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const authOrTest = to.matched.some(record => record.meta.requiresAuthOrAnonymousTest)
@@ -25,6 +29,11 @@ router.beforeEach((to, from, next) => {
     loader.hide()
     return
   }
+  if (this.$inviteToken) {
+    next(`/problem/${problemId}`)
+    return
+  }
+
   if (requiresAuth && !currentUser && !this.$token) next('login')
   else if (!requiresAuth && (currentUser || this.$token)) next('problems')
   else next()
