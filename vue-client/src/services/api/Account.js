@@ -35,10 +35,12 @@ class Account extends Base {
     }
   }
 
-  async sendEmail(email) {
+  async sendEmail(email, userId) {
     try {
       var request = {
-        "email": email.toString()
+        "email": email.toString(),
+        "problem": "-LYC8RguuOLye1yJQt3H",
+        "invitedBy": userId
       }
       await this.http.post(`/emails/send`, JSON.stringify(request))
     } catch (e) {

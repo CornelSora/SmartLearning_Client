@@ -80,7 +80,7 @@ export default {
       }
     },
     send_email (item, index, target) {
-      this.$api.account.sendEmail(item.email)
+      this.$api.account.sendEmail(item.email, this.$userID)
     }
   }
 }

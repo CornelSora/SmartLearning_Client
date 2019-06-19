@@ -146,6 +146,7 @@ class Listener {
         this.listenTestCodeCommand();
         this.listenForKillProcess();
         this.listenDisconnect();
+        this.socket.emit("connection", "123212331")
     }
 }
 

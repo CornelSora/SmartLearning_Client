@@ -107,7 +107,8 @@ var token = jwt.sign({date: utc}, SECRET_KEY);
 
 const socket = io(process.env.SOCKET_SERVER, {
   query: {token: token}
-});
+})
+
 const socketErrorMessage = `It seems like there is an error with the compiler.
 Please refresh the page.
 If the error persists try again later. Thank you!`
@@ -172,6 +173,9 @@ export default {
   },
   methods: {
     setListeners () {
+      socket.on('connection', function (socketR) {
+        console.warn(socketR)
+      })
       socket.on('result', (cmdResult) => {
         if (isTimeout) {
           isTimeout = false

@@ -36,6 +36,7 @@ io.on('connection', function(socket) {
     logger.info(`New connection: ${socket.id}`)
     var listener = new Listener(socket);
     listener.listenAll();
+    //  socket.emit('connection', socket);
 });
 
 // app.use(express.static(__dirname + '/public'));
