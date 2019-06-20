@@ -1,12 +1,13 @@
 <template>
-  <div>
-    <b-btn @click="goToProblems" class="btnLogout" variant="primary">Problems</b-btn>
+  <div class="problem-page">
+    <center>
+      <h2 class="info">{{ problem.name }}</h2>
+    </center>
     <b-tabs class="problem-details">
         <b-tab title="Problem content" active>
           <b-media v-if="problem">
             <br/>
             <b>
-              <h2 class="mt-0">{{ problem.name }}</h2>
               <p>Difficulty: {{ problem.difficulty }}</p>
             </b>
             <pre class="problem-content">
@@ -30,12 +31,12 @@
                     <td v-if="fct.parameters && fct.parameters.length > 0">
                       <!-- {{fct.parameters.map(x => x.parameterType).join(',')}} -->
                       <table class="table-bordered">
-                        <thead>
+                        <thead class="thead-light">
                           <th>Type</th>
                           <th>Details</th>
                         </thead>
                         <tbody>
-                          <tr v-for="param in fct.parameters" :key="param">
+                          <tr v-for="param in fct.parameters" :key="fct.parameters.indexOf(param)">
                             <td>{{ param.parameterType }}</td>
                             <td>{{ param.parameterDesc }}</td>
                           </tr>
@@ -54,7 +55,7 @@
                   <th scope="col">Expected result</th>
                 </thead>
                 <tbody>
-                  <tr v-for="test in problem.tests" :key="test.expectedResult">
+                  <tr v-for="test in problem.tests" :key="problem.tests.indexOf(test)">
                     <td>
                       <div v-for="param in test.parameters" :key="param">
                         Param{{test.parameters.indexOf(param)}}: {{param}}
@@ -67,7 +68,7 @@
             </div>
           </b-media>
         </b-tab>
-        <b-tab title="Editor" v-if="solution">
+        <b-tab title="Editor" @click="editorSelected"> <!--  @click="trigger" -->
             <EditorComponent />
         </b-tab>
     </b-tabs>
@@ -81,8 +82,9 @@ export default {
   data () {
     return {
       problem: {},
-      solution: '',
-      problemID: this.$route.params.id
+      solution: null,
+      problemID: this.$route.params.id,
+      isFirstTime: true
     }
   },
   async mounted () {
@@ -96,8 +98,7 @@ export default {
           this.problem.tests = this.problem.functions.map(x => x.tests)[0]
           this.problem.tests = this.problem.tests.slice(0, this.problem.tests.length / 2)
         }
-        this.solution = this.$api.problem.getUserSolution()
-        console.log(this.problem)
+        //  this.solution = this.$api.problem.getUserSolution()
       } else {
         console.warn('something went wrong when I got the problems')
       }
@@ -110,7 +111,19 @@ export default {
   methods: {
     goToProblems() {
       this.$router.push({ path: '/problems' })
+    },
+    editorSelected () {
+      if (!this.isFirstTime) return
+      this.isFirstTime = false
+        this.$subject.next({
+          type: 'EDITOR',
+          userSolution: this.problem.solution,
+          testFunctions: this.problem.functions
+        })
     }
+    // trigger() {
+    //   document.dispatchEvent(new Event("trigger"))
+    // }
   },
   components: {
     EditorComponent
@@ -119,6 +132,9 @@ export default {
 </script>
 
 <style>
+.problem-page {
+  padding: 10px;
+}
 .problem-details {
     text-align: left;
 }

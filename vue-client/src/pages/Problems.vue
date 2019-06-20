@@ -1,7 +1,8 @@
 <template>
-  <div>
-    <b-btn @click="addProblem" class="btnLogout" variant="primary">Add problem</b-btn>
-    <b-btn @click="logout" class="btnLogout" variant="primary">Logout</b-btn>
+  <div style="margin-top: 50px">
+    <!-- <b-btn @click="addClient" class="btnLogout" variant="primary">Clients</b-btn> -->
+    <!-- <b-btn @click="addProblem" class="btnLogout" variant="primary">Add problem</b-btn> -->
+    <!-- <b-btn @click="logout" class="btnLogout" variant="primary">Logout</b-btn> -->
     <center>
       <h2>List of problems</h2>
     </center>
@@ -13,7 +14,7 @@
             <b-input-group>
               <b-form-input v-model="filter" placeholder="Type to Search" />
               <b-input-group-append>
-                <b-btn :disabled="!filter" @click="filter = ''" variant="primary">Clear</b-btn>
+                <b-btn :disabled="!filter" @click="filter = ''" variant="info">Clear</b-btn>
               </b-input-group-append>
             </b-input-group>
           </b-form-group>
@@ -24,7 +25,7 @@
               <b-form-select v-model="sortBy" :options="sortOptions">
                 <option slot="first" :value="null">-- none --</option>
               </b-form-select>
-              <b-form-select :disabled="!sortBy" v-model="sortDesc" slot="append">
+              <b-form-select :disabled="!sortBy" v-model="sortDesc" slot="append" variant="info">
                 <option :value="false">Asc</option>
                 <option :value="true">Desc</option>
               </b-form-select>
@@ -51,22 +52,23 @@
 
       <!-- Main table element -->
       <b-table show-empty
-              stacked="md"
-              striped="striped"
-              hover
-              :items="problems"
-              :fields="fields"
-              :current-page="currentPage"
-              :per-page="perPage"
-              :filter="filter"
-              :sort-by.sync="sortBy"
-              :sort-desc.sync="sortDesc"
-              :sort-direction="sortDirection"
-              @filtered="onFiltered"
+        stacked="md"
+        striped="striped"
+        hover
+        :items="problems"
+        :fields="fields"
+        :current-page="currentPage"
+        :per-page="perPage"
+        :filter="filter"
+        :sort-by.sync="sortBy"
+        :sort-desc.sync="sortDesc"
+        :sort-direction="sortDirection"
+        @filtered="onFiltered"
+        style="width: 100%; border: 1px solid #dadadb; display: block;"
       >
         <template slot="actions" slot-scope="row">
           <!-- We use @click.stop here to prevent a 'row-clicked' event from also happening -->
-          <b-button size="sm" @click.stop="info(row.item, row.index, $event.target)" class="mr-1" variant="primary">
+          <b-button size="sm" @click.stop="info(row.item, row.index, $event.target)" class="mr-1" variant="info">
             Details
           </b-button>
         </template>
@@ -80,8 +82,8 @@
       </b-table>
 
       <b-row>
-        <b-col md="6" class="my-1">
-          <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" class="my-0" />
+        <b-col md="6" class="my-1" variant="info">
+          <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" class="mr-1"  />
         </b-col>
       </b-row>
     </b-container>
@@ -126,13 +128,15 @@ export default {
     try {
       const result = await this.$api.problem.getAllProblems()
       if (result.ok) {
-        this.problems = result.result
+        this.problems = result.result.problems
         this.totalRows = this.problems.length
         this.problems.map(x => {
           if (x.content.length > 150) {
             x.content = x.content.substring(0,150) + "..."
           }
         })
+        const dailyResult = result.result.daily
+        this.$subject.next({type: 'DAILY', daily: dailyResult})
       } else {
         console.warn('something went wrong when I got the problems')
       }
@@ -143,27 +147,22 @@ export default {
     }
   },
   methods: {
-    async logout () {
-      let loader = this.$loading.show()
-      try {
-        await this.$firebase.auth().signOut()
-        this.$router.replace('/')
-      } catch (e) {
-        console.warn(e)
-      } finally {
-        loader.hide()
-      }
-    },
     onFiltered (filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
       this.totalRows = filteredItems.length
       this.currentPage = 1
     },
-    info(item, index, target) {
-      this.$router.push(`problems/${item.UID}`)
+    info (item, index, target) {
+      console.log('-here')
+      //  this.$router.push({ name: 'ProblemDetails', params: { id: `${item.UID}` } })
+      //  this.$router.push(`problem/${item.UID}`)
+      this.$router.push(`problem/${item.UID}`)
     },
-    addProblem() {
+    addProblem () {
       this.$router.push('AddProblem')
+    },
+    addClient () {
+      this.$router.push('AddClient')
     }
   }
 }

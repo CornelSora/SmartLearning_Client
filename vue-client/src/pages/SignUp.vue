@@ -1,10 +1,11 @@
 <template>
   <b-container class="register-container">
-    <p>Let's create a new account!</p>
+    <h3 style="margin-bottom: 20px">Let's create a new account!</h3>
     <b-form-input
       type="text"
       placeholder="Email"
       v-model="user.email"
+      class="register-form"
     /><br/>
     <b-form-input
       type="text"
@@ -58,7 +59,7 @@
             await this.$firebase
               .auth()
               .signInWithEmailAndPassword(this.user.email,this.user.password)
-            this.$router.replace('hello')
+            this.$subject.next({ type: 'LOGIN' })
           } else {
             this.error.text = result.message
             this.error.show = true
@@ -89,5 +90,11 @@
 <style>
 .register-container {
   text-align: center;
+  margin-top: 10%;
+}
+.register-form {
+  width: 100%;
+  border: 1px solid #dadadb;
+  display: block;
 }
 </style>
