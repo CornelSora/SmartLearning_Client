@@ -23,6 +23,7 @@
     "rxjs-compat": "^6.5.2",
     "socket.io": "^2.2.0",
     "vue": "^2.5.2",
+    "vue-flash-message": "^0.7.2",
     "vue-loading-overlay": "^3.1.1",
     "vue-router": "^3.0.1"
   },

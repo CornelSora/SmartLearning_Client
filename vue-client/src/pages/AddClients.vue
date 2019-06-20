@@ -22,15 +22,18 @@
               Send
             </b-button>
           </template>
-          <template slot="row-details" slot-scope="row">
-            <b-card>
-              <ul>
-                <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value}}</li>
-              </ul>
-            </b-card>
+          <template slot="problem" slot-scope="row">
+            <div>
+              <b-form-select v-model="selected[row.index]" :options="problems"></b-form-select>
+            </div>
           </template>
         </b-table>
       </b-container>
+      <b-alert
+        :show="successEmail"
+        variant="success">
+      {{ successMessage }}
+      </b-alert>
     </div>
 </template>
 
@@ -42,11 +45,17 @@ export default {
       emails: [],
       fields: [
         { key: 'email', label: 'Email', sortable: true },
+        { key: 'problem', label: 'Problem', sortable: false },
         { key: 'actions' }
       ],
+      successEmail: false,
+      successMessage: 'Email sent successfully',
+      problems: [],
+      selected: []
     }
   },
   async mounted () {
+    await this.getProblems()
     await this.getClients()
   },
   methods: {
@@ -55,7 +64,10 @@ export default {
       try {
         if(!this.email) return
         await this.$api.account.saveClient(this.$userID, this.email)
-        this.emails.push({ email: this.email.toString() })
+        this.emails.push({
+          email: this.email.toString()
+        })
+        this.selected.push(this.problems[0].value)
         this.email = ""
       } catch (e) {
         console.warn(e)
@@ -69,6 +81,9 @@ export default {
         const result = await this.$api.account.getClients(this.$userID)
         if (result.ok) {
           this.emails = result.result
+          for (var i = 0; i < this.emails.length; i++) {
+            this.selected.push(this.problems[0].value)            
+          }
           console.log(this.emails)
         } else {
           console.warn('something went wrong when I got the problems')
@@ -79,8 +94,41 @@ export default {
         loader.hide()
       }
     },
-    send_email (item, index, target) {
-      this.$api.account.sendEmail(item.email, this.$userID)
+    async getProblems () {
+      let loader = this.$loading.show()
+      try {
+        const result = await this.$api.problem.getAllProblems()
+        if (result.ok) {
+          var tempProblems = result.result.problems
+          for (var i = 0; i < tempProblems.length; i++) {
+            var option = {
+              value: tempProblems[i].UID,
+              text: tempProblems[i].name
+            }
+            this.problems.push(option)
+            this.selected.push(this.problems[0].value)
+          }
+          console.log(this.problems)          
+        } else {
+          console.warn('something went wrong when I got the problems')
+        }
+      } catch (e) {
+        console.warn(e)
+      } finally {
+        loader.hide()
+      }
+    },
+    async send_email (item, index, target) {
+      this.successEmail = false
+      let loader = this.$loading.show()
+      try {
+        await this.$api.account.sendEmail(item.email, this.$userID, this.selected[index])
+        this.successEmail = true
+      } catch (e) {
+        console.warn(e)
+      } finally {
+        loader.hide()
+      }
     }
   }
 }

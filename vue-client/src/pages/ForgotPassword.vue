@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="forgot-container">
     <b-form-input
       v-model="email"
       placeholder="Enter the email">
@@ -15,9 +15,11 @@
       variant="info">
     {{ info }}
     </b-alert>
+    <div>
     <b-btn
       variant="outline-success"
       @click="forgotPassword">Send email</b-btn>
+    </div>
   </div>
 </template>
 
@@ -52,5 +54,7 @@ export default {
 </script>
 
 <style>
-
+.forgot-container {
+  margin-top: 10%;
+}
 </style>

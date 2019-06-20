@@ -5,7 +5,7 @@ const prodEnv = require('./prod.env')
 module.exports = merge(prodEnv, {
   NODE_ENV: '"development"',
   SOCKET_SERVER: '"http://localhost:8081"',
-  API_SERVER: '"http://localhost:3000/api"',
+  API_SERVER: '"http://localhost:8083/api"',
   FIREBASE_CONFIG: `{
     apiKey: "AIzaSyD4kytLYCKlLg97MdSyV43mbDEnB03a160",
     authDomain: "nodelearning-4b086.firebaseapp.com",
