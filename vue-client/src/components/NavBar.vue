@@ -10,7 +10,7 @@
                 <b-nav-item to="/problems" v-if="isAuthenticated" class="link">Problems</b-nav-item>
                 <b-nav-item :to="getDailyProblemPath()" class="link"  v-if="isAuthenticated && getDailyProblemPath()" replace>Daily problem</b-nav-item>
                 <b-nav-item to="/Editor" class="link" @click="editTest_Clicked()">Editor (Test)</b-nav-item>
-                <b-nav-item to="/AddClient" class="link" v-if="isAuthenticated">Clients</b-nav-item>
+                <b-nav-item to="/AddClient" class="link" v-if="isAuthenticated">Invitations</b-nav-item>
             </b-navbar-nav>
 
             <!-- Right aligned nav items -->
@@ -30,7 +30,7 @@
                 <b-nav-item-dropdown right>
                   <!-- Using 'button-content' slot -->
                   <template slot="button-content"><em>User</em></template>
-                  <b-dropdown-item href="#" v-if="isAuthenticated">Profile</b-dropdown-item>
+                  <b-dropdown-item to="/Profile" v-if="isAuthenticated">Profile</b-dropdown-item>
                   <b-dropdown-item to="/Login"  v-if="!isAuthenticated">Login</b-dropdown-item>
                   <b-dropdown-item to="/Register"  v-if="!isAuthenticated">Register</b-dropdown-item>
                   <b-dropdown-item @click="logout" v-if="isAuthenticated">Sign Out</b-dropdown-item>

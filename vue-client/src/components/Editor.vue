@@ -32,6 +32,7 @@
       <editor
           v-model='content'
           @init='editorInit'
+          :readOnly='true'
           :lang='language'
           :theme='theme'
           width='100%'
@@ -43,7 +44,7 @@
     </div>
     <center>
       <div v-if="!debugMode" class="buttons-area">
-        <b-btn @click='onSaveEvent' v-if="!this.loadedAlone" variant="primary">Save</b-btn>
+        <b-btn @click='onSaveEvent' v-if="!loadedAlone && !isReadonly" variant="primary">Save</b-btn>
         <b-btn @click='onCompileEvent' v-if="language !== this.languages.python" variant="primary">Compile</b-btn>
         <b-btn @click='onRunEvent' variant="success">Run</b-btn>
         <!-- <b-btn @click='onDebugEvent'>Debug</b-btn> -->
@@ -66,11 +67,11 @@
         v-model='result'
         @init='resultEditorInit'
         lang='batchfile'
+        :readonly='true'
         :theme='theme'
         :width='debugMode ? "50%" : "100%"'
         style="float: left"
         height='200px'
-        :readonly='true'
         ref='resultEditor'
         >
       </editor>
@@ -144,10 +145,12 @@ export default {
       language: this.$settings.getLanguage() ? this.$settings.getLanguage() : 'c_cpp',
       theme: this.$settings.getTheme() ? this.$settings.getTheme() : 'dawn',
       defaultMesage: 'Write your code here',
-      isInfoLocalsCommand: false
+      isInfoLocalsCommand: false,
+      isInvitation: false
     }
   },
   mounted () {
+    console.warn(this.isReadonly)
     // if (this.$userID) {
     //   this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
     //   this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
@@ -161,6 +164,12 @@ export default {
           this.setContent()
           this.loadedAlone = false
           //  subscription.unsubscribe()
+        } if (sender.type == 'INVITATION') {
+          this.isInvitation = true
+          this.content = sender.userSolution
+          this.functions = sender.testFunctions
+          this.setContent()
+          this.loadedAlone = false
         } else {
           this.loadedAlone = true
           //  subscription.unsubscribe()
@@ -447,8 +456,17 @@ export default {
           contentToSend = this.content.split('\n').join('\\n')
           contentToSend = contentToSend.split('"').join('\\\"')
         }
-        await this.$api.problem.saveProblemSolution(this.problemID, this.$userID, `${contentToSend}`)
-        this.$settings.setCode(this.content, this.language)
+        if (this.$userID && !this.isInvitation) {
+          await this.$api.problem.saveProblemSolution(this.problemID, this.$userID, `${contentToSend}`)
+          this.$settings.setCode(this.content, this.language)
+        }
+        if (this.isInvitation) {
+          // this.$subject.next({
+          //   type: 'SAVE_SOLUTION',
+          //   solution: this.content
+          // })
+          this.$emit('test', this.content)
+        }
         this.result = "File saved"
       } catch (e) {
         console.warn(e)
@@ -483,9 +501,11 @@ export default {
       this.content = (!this.content || this.content.indexOf(this.defaultMesage) > -1) ? this.setDefaultContent() : this.content
     },
     setDefaultContent() {
-      var localCode = this.$settings.getCode(this.language)
-      if (localCode) {
-        return localCode
+      if (!this.isInvitation) {
+        var localCode = this.$settings.getCode(this.language)
+        if (localCode) {
+          return localCode
+        }
       }
       if (this.language == 'c_cpp') {
         var functionDetails = this.functions[0]
@@ -522,6 +542,16 @@ int main() {
     },
     theme: function (newTheme, oldTheme) {
       this.$settings.setTheme(newTheme)
+    },
+    isReadonly: function(n, o) {
+      this.isReadonly = n
+    }
+  },
+  props: {
+    isReadonly: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
   components: {

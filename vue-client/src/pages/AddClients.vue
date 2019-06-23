@@ -21,6 +21,9 @@
             <b-button size="sm" @click.stop="send_email(row.item, row.index, $event.target)" class="mr-1" variant="primary">
               Send
             </b-button>
+            <b-button size="sm" @click.stop="view_invitations(row.item, row.index, $event.target)" class="mr-1" variant="primary">
+              View
+            </b-button>
           </template>
           <template slot="problem" slot-scope="row">
             <div>
@@ -34,10 +37,23 @@
         variant="success">
       {{ successMessage }}
       </b-alert>
+      <b-alert
+        :show="errorEmail"
+        variant="danger">
+      {{ errorMessage }}
+      </b-alert>
+      <Invitations
+         v-if="selectedEmail"
+         :email="selectedEmail"
+         :displayActions="false"
+         :invitedBy="invitedBy"
+      />
     </div>
 </template>
 
 <script>
+import Invitations from '../components/Invitations'
+
 export default {
   data () {
     return {
@@ -50,8 +66,12 @@ export default {
       ],
       successEmail: false,
       successMessage: 'Email sent successfully',
+      errorEmail: false,
+      errorMessage: 'Something went wrong trying to send email',
       problems: [],
-      selected: []
+      selected: [],
+      selectedEmail: '',
+      invitedBy: this.$userID
     }
   },
   async mounted () {
@@ -120,16 +140,34 @@ export default {
     },
     async send_email (item, index, target) {
       this.successEmail = false
+      this.errorEmail = false
       let loader = this.$loading.show()
       try {
-        await this.$api.account.sendEmail(item.email, this.$userID, this.selected[index])
-        this.successEmail = true
+        var result = await this.$api.account.sendEmail(item.email, this.$userID, this.selected[index])
+        if (result.ok) {
+          this.successEmail = true
+          this.view_invitations(item, index, target)
+        } else {
+          this.errorEmail = true
+          console.log(result)
+          this.errorMessage = result.message
+        }
       } catch (e) {
         console.warn(e)
       } finally {
         loader.hide()
       }
+    },
+    view_invitations (item, index, target) {
+      this.selectedEmail = item.email
+      this.$subject.next({
+        type: 'refreshInvitations',
+        email: this.selectedEmail
+      })
     }
+  },
+  components: {
+    Invitations
   }
 }
 </script>

@@ -69,7 +69,9 @@
           </b-media>
         </b-tab>
         <b-tab title="Editor" @click="editorSelected"> <!--  @click="trigger" -->
-            <EditorComponent />
+            <EditorComponent
+              :isReadonly="isAdmin"
+              @test="saveInvitationCode" />
         </b-tab>
     </b-tabs>
   </div>
@@ -77,6 +79,8 @@
 
 <script>
 import EditorComponent from '@/components/Editor'
+import InvitationStorage from '../services/InvitationStorage'
+
 export default {
   name: 'problemDetails',
   data () {
@@ -84,7 +88,13 @@ export default {
       problem: {},
       solution: null,
       problemID: this.$route.params.id,
-      isFirstTime: true
+      isFirstTime: true,
+      originalInvitations: [],
+      invitedBy: null,
+      hash: null,
+      email: '',
+      invStorage: new InvitationStorage(),
+      isAdmin: false
     }
   },
   async mounted () {
@@ -98,6 +108,24 @@ export default {
           this.problem.tests = this.problem.functions.map(x => x.tests)[0]
           this.problem.tests = this.problem.tests.slice(0, this.problem.tests.length / 2)
         }
+        this.invitedBy = this.$route.query.invitedBy
+        this.hash = this.$route.query.hash
+        if (this.invitedBy && this.hash) {
+          if (this.invitedBy == this.$userID) {
+            this.problem.solution = this.invStorage.getCode()
+            this.isAdmin = true
+          } else {
+            debugger
+            this.isAdmin = false
+            await this.getInvitations()
+            var invitation = this.originalInvitations.find(x => x.invitedBy == this.invitedBy && x.emailHash.toString() == this.hash && x.problem == this.problemID)
+            if (invitation.solution) {
+              this.problem.solution = invitation.solution
+            } else {
+              this.problem.solution = ''
+            }
+          }
+        }
         //  this.solution = this.$api.problem.getUserSolution()
       } else {
         console.warn('something went wrong when I got the problems')
@@ -107,19 +135,64 @@ export default {
     } finally {
       loader.hide()
     }
+
+    var subscription = this.$subject.subscribe({
+      next: async (sender) => {
+          if (sender.type == 'SAVE_SOLUTION') {
+            this.saveInvitationCode(sender.solution)
+          }
+      }
+    })
   },
   methods: {
+    async getInvitations () {
+      this.invitations = []
+      try {
+          let result = await this.$api.account.getProfile(this.$userID)
+          var profile = {}
+          if (result.ok) {
+            profile = result.result
+            this.email = profile.email
+          } else {
+            console.warn('something went wrong when I got the profile')
+          }
+          result = await this.$api.account.getInvitations(profile.email)
+          if (result.ok) {
+            let invits = result.result.invitations
+            if (!result.result) return
+            this.originalInvitations = result.result.invitations
+          }
+      } catch (e) {
+          throw e
+      }
+  },
     goToProblems() {
       this.$router.push({ path: '/problems' })
     },
     editorSelected () {
       if (!this.isFirstTime) return
       this.isFirstTime = false
-        this.$subject.next({
-          type: 'EDITOR',
-          userSolution: this.problem.solution,
-          testFunctions: this.problem.functions
-        })
+      this.$subject.next({
+        type: this.invitedBy ? 'INVITATION' : 'EDITOR',
+        userSolution: this.problem.solution,
+        testFunctions: this.problem.functions
+      })
+    },
+    async saveInvitationCode (solution) {
+      var invitation = this.originalInvitations.find(x => x.invitedBy == this.invitedBy && x.emailHash.toString() == this.hash && x.problem == this.problemID)
+      invitation.solution = solution
+      var request = {
+        invitations: this.originalInvitations,
+        email: this.email
+      }
+      let loader = this.$loading.show()
+      try {
+          await this.$api.account.updateInvitation(request)
+      } catch (e) {
+          console.warn(e)
+      } finally {
+          loader.hide()
+      }
     }
     // trigger() {
     //   document.dispatchEvent(new Event("trigger"))

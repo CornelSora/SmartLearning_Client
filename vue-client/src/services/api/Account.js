@@ -34,7 +34,22 @@ class Account extends Base {
       return super.error(e)
     }
   }
-
+  async getProfile(userID) {
+    try {
+      const result = await this.http.get(`/account/${userID}`)
+      return super.ok(result)
+    } catch (e) {
+      return super.error(e)
+    }
+  }
+  async getInvitations(email) {
+    try {
+      const result = await this.http.get(`/emails/invitations/${email}`)
+      return super.ok(result)
+    } catch (e) {
+      return super.error(e)
+    }
+  }
   async sendEmail(email, userId, problemId) {
     try {
       var request = {
@@ -43,6 +58,14 @@ class Account extends Base {
         "invitedBy": userId
       }
       const result = await this.http.post(`/emails/send`, JSON.stringify(request))
+      return super.ok(result)
+    } catch (e) {
+      return super.error(e)
+    }
+  }
+  async updateInvitation(userInvitiations) {
+    try {
+      const result = await this.http.post(`/account/updateInvitation`, JSON.stringify(userInvitiations))
       return super.ok(result)
     } catch (e) {
       return super.error(e)

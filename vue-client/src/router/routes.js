@@ -55,6 +55,12 @@ const routes = [
       name: 'UpdateAccount',
       component: () => import("@/pages/UpdateAccount"),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/Profile',
+      name: 'Profile',
+      component: () => import("@/pages/Profile"),
+      meta: { requiresAuth: true }
     }
 ]
 

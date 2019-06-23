@@ -18,7 +18,7 @@ export default class Base {
       case 'ACCOUNT_INVALID_CREDENTIALS':
         return 'Email or password is incorrect'
       default:
-        return e.response.data.message
+        return e.response.data.message ? e.response.data.message : e.response.data
     }
   }
 
