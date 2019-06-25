@@ -12,6 +12,11 @@
             <label>Password: </label>
             <label><b-btn variant="outline-success" @click="forgotPassword" size="sm">reset it</b-btn></label>
         </b-form>
+        <b-form inline>
+            <label>Account type: </label>
+            <label><b>{{profile.type}}</b></label>
+            <label><b-btn variant="outline-success" @click="updateAccount" size="sm">update it</b-btn></label>
+        </b-form>
         <b-alert
             :show="error != ''"
             variant="danger">
@@ -71,6 +76,9 @@ export default {
       } finally {
         loader.hide()
       }
+    },
+    async updateAccount () {
+      this.$router.push('UpdateAccount')
     }
   },
   components: {

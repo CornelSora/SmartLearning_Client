@@ -115,7 +115,6 @@ export default {
             this.problem.solution = this.invStorage.getCode()
             this.isAdmin = true
           } else {
-            debugger
             this.isAdmin = false
             await this.getInvitations()
             var invitation = this.originalInvitations.find(x => x.invitedBy == this.invitedBy && x.emailHash.toString() == this.hash && x.problem == this.problemID)

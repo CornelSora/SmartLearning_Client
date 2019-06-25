@@ -44,10 +44,11 @@
                     </ul>
                 </p>
                 </div>
-                <h5><b>$2.99</b></h5>
-                <a :href="payment_url" class="btn btn-primary">
+                <h5><b><strike>$2.99</strike></b></h5>
+                <h5><b>Free</b></h5>
+                <!-- <a :href="payment_url" class="btn btn-primary" v-if="!isPayed">
                     <span class="glyphicon glyphicon-saved"></span> Buy
-                </a>
+                </a> -->
                 <div class="card-footer">
                 <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
                 </div>
@@ -71,12 +72,15 @@
                         <li>Get daily problem</li>
                         <li>Debug option online</li>
                         <li>Automated verification of the code online</li>
-                        <li>Get recommended problems based on progress</li>
-                        <li>Follow a friend while he's coding</li>
+                        <li>Invite people to solve problems through email</li>
+                        <li>Check the solution of the invited persone</li>
                     </ul>
                 </p>
                 </div>
                 <h5><b>$4.99</b></h5>
+                <a :href="payment_url" class="btn btn-primary" v-if="!isPayed">
+                    <span class="glyphicon glyphicon-saved"></span> Buy
+                </a>
                 <div class="card-footer">
                 <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9733;</small>
                 </div>
@@ -90,13 +94,28 @@ export default {
   name: "UpdateAccount",
   data () {
     return {
-      payment_url: ''
+      payment_url: '',
+      isPayed: false
     }
   },
   async mounted () {
     let loading = this.$loading.show()
     try {
-        let result = await this.$api.paypal.pay()
+        console.warn(this.$route.query)
+        if (this.$route.query.paymentId && this.$route.query.success) {
+            this.$api.account.updateStatus(this.$route.query.paymentId, this.$userID)
+            this.isPayed = true
+            return
+        }
+        let result = await this.$api.account.getProfile(this.$userID)
+        if (result.ok) {
+            var accountType = result.result.type
+            if (accountType == 'premium') {
+                this.isPayed = true
+                return
+            }
+        }
+        result = await this.$api.paypal.pay()
         if (result.ok) {
             this.payment_url = result.result
             console.warn(this.payment_url)

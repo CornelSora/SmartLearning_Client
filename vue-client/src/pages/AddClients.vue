@@ -75,6 +75,13 @@ export default {
     }
   },
   async mounted () {
+    let result = await this.$api.account.getProfile(this.$userID)
+    if (result.ok) {
+      var accountType = result.result.type
+      if (accountType != 'premium') {
+        this.$router.push('UpdateAccount')
+      }
+    }
     await this.getProblems()
     await this.getClients()
   },

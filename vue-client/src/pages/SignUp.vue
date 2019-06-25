@@ -39,7 +39,7 @@
           email: '',
           username: '',
           password: '',
-          type: 'student'
+          type: 'basic'
         },
         error: {
           text: '',

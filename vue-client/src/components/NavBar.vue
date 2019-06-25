@@ -1,7 +1,7 @@
 <template>
     <div>
         <b-navbar toggleable="lg" type="dark" variant="info" class="navbar-fixed-top">
-            <b-navbar-brand href="#">Smart Learning</b-navbar-brand>
+            <b-navbar-brand to="/problems" >Smart Learning</b-navbar-brand>
 
             <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 

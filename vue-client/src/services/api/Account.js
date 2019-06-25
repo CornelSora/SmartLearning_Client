@@ -71,6 +71,14 @@ class Account extends Base {
       return super.error(e)
     }
   }
+  async updateStatus(pId, userId) {
+    try {
+      const result = await this.http.put(`/users/updatestatus`, JSON.stringify({ userID: userId, paymentId: pId }))
+      return super.ok(result)
+    } catch (e) {
+      return super.error(e)
+    }
+  }
 }
 
 export default Account

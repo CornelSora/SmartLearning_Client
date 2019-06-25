@@ -75,7 +75,7 @@ export default {
         let loader = this.$loading.show()
         try {
             await this.getProblems()
-            await this.getInvitations()
+            await this.getInvitations(this.email)
             console.warn(this.invitations)
         } catch (e) {
             console.warn(e)
@@ -87,8 +87,7 @@ export default {
                 if (sender.type == 'refreshInvitations') {
                     let loader = this.$loading.show()
                     try {
-                        this.email = sender.email
-                        await this.getInvitations()
+                        await this.getInvitations(sender.email)
                     } finally {
                         loader.hide()
                     }
@@ -97,10 +96,10 @@ export default {
         })
     },
     methods: {
-        async getInvitations () {
+        async getInvitations (email) {
             this.invitations = []
             try {
-                var result = await this.$api.account.getInvitations(this.email)
+                var result = await this.$api.account.getInvitations(email)
                 if (result.ok) {
                     let invits = result.result.invitations
                     if (!result.result) return

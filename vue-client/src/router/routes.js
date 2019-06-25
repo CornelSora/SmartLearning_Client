@@ -48,7 +48,7 @@ const routes = [
       path: '/AddClient',
       name: 'Client',
       component: () => import("@/pages/AddClients"),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, premiumRequired: true }
     },
     {
       path: '/UpdateAccount',
