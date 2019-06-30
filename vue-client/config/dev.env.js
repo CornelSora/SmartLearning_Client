@@ -4,7 +4,7 @@ const prodEnv = require('./prod.env')
 
 module.exports = merge(prodEnv, {
   NODE_ENV: '"development"',
-  SOCKET_SERVER: '"http://localhost:8081"',
+  SOCKET_SERVER: '"http://localhost:3000"',
   API_SERVER: '"http://localhost:8083/api"',
   FIREBASE_CONFIG: `{
     apiKey: "AIzaSyD4kytLYCKlLg97MdSyV43mbDEnB03a160",

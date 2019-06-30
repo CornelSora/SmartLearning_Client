@@ -12,7 +12,6 @@ class InvitationStorage {
     }
 
     setCode (code) {
-        console.warn(code)
         var settings = this.getObject()
         if (!settings.code) {
             settings.code = {}

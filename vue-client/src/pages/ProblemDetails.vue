@@ -174,11 +174,13 @@ export default {
       this.$subject.next({
         type: this.invitedBy ? 'INVITATION' : 'EDITOR',
         userSolution: this.problem.solution,
-        testFunctions: this.problem.functions
+        testFunctions: this.problem.functions,
+        problemID: this.problemID
       })
     },
     async saveInvitationCode (solution) {
       var invitation = this.originalInvitations.find(x => x.invitedBy == this.invitedBy && x.emailHash.toString() == this.hash && x.problem == this.problemID)
+      invitation.isAccepted = true
       invitation.solution = solution
       var request = {
         invitations: this.originalInvitations,

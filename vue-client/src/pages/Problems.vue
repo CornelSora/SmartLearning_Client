@@ -110,7 +110,7 @@ export default {
       sortBy: null,
       sortDesc: false,
       sortDirection: 'asc',
-      filter: null,
+      filter: this.$route.query.search,
       modalInfo: { title: '', content: '' }
     }
   },
@@ -130,12 +130,15 @@ export default {
       if (result.ok) {
         this.problems = result.result.problems
         this.totalRows = this.problems.length
+        console.warn(this.problems)
         this.problems.map(x => {
           if (x.content.length > 150) {
             x.content = x.content.substring(0,150) + "..."
           }
         })
         const dailyResult = result.result.daily
+        this.filter = this.$route.query.search
+        console.warn(dailyResult)
         this.$subject.next({type: 'DAILY', daily: dailyResult})
       } else {
         console.warn('something went wrong when I got the problems')

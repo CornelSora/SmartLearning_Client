@@ -16,16 +16,16 @@
             <!-- Right aligned nav items -->
             <b-navbar-nav class="ml-auto link">
                 <b-nav-form>
-                <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-                <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
+                <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="searchTerm"></b-form-input>
+                <b-button size="sm" class="my-2 my-sm-0" @click="search">Search</b-button>
                 </b-nav-form>
 
-                <b-nav-item-dropdown text="Lang" right>
+                <!-- <b-nav-item-dropdown text="Lang" right>
                   <b-dropdown-item href="#">EN</b-dropdown-item>
                   <b-dropdown-item href="#">ES</b-dropdown-item>
                   <b-dropdown-item href="#">RU</b-dropdown-item>
                   <b-dropdown-item href="#">FA</b-dropdown-item>
-                </b-nav-item-dropdown>
+                </b-nav-item-dropdown> -->
 
                 <b-nav-item-dropdown right>
                   <!-- Using 'button-content' slot -->
@@ -46,7 +46,8 @@ export default {
   data () {
     return {
       isAuthenticated: false,
-      dailyProblemPath: ''
+      dailyProblemPath: '',
+      searchTerm: ''
     }
   },
   async mounted () {
@@ -102,6 +103,9 @@ export default {
       this.$subject.next({
         type: 'EDITOR_TEST'
       })
+    },
+    search() {
+      this.$router.push(`/problems?search=${this.searchTerm}`)
     }
   }
 }

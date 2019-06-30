@@ -158,13 +158,16 @@ export default {
     var subscription = this.$subject.subscribe({
       next: (sender) => {
         if (sender.type == 'EDITOR') {
-          var localCode = this.$settings.getCode(this.language)
+          this.loadedAlone = false
+          var localCode = this.$settings.getCode(this.language, this.problemID)
           this.content = localCode ? localCode : sender.userSolution
+          if (!localCode && this.content) {
+            this.$settings.setCode(this.content, this.language, this.problemID)
+          }
           this.functions = sender.testFunctions
           this.setContent()
-          this.loadedAlone = false
           //  subscription.unsubscribe()
-        } if (sender.type == 'INVITATION') {
+        } else if (sender.type == 'INVITATION') {
           this.isInvitation = true
           this.content = sender.userSolution
           this.functions = sender.testFunctions
@@ -458,7 +461,7 @@ export default {
         }
         if (this.$userID && !this.isInvitation) {
           await this.$api.problem.saveProblemSolution(this.problemID, this.$userID, `${contentToSend}`)
-          this.$settings.setCode(this.content, this.language)
+          this.$settings.setCode(this.content, this.language, this.problemID)
         }
         if (this.isInvitation) {
           // this.$subject.next({
@@ -502,7 +505,7 @@ export default {
     },
     setDefaultContent() {
       if (!this.isInvitation) {
-        var localCode = this.$settings.getCode(this.language)
+        var localCode = this.$settings.getCode(this.language, this.problemID)
         if (localCode) {
           return localCode
         }

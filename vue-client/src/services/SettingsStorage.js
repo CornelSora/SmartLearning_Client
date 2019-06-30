@@ -31,19 +31,28 @@ class SettingsStorage {
         return this.getObject().theme ? this.getObject().theme : null
     }
 
-    setCode (code, language) {
+    setCode (code, language, problemId) {
         var settings = this.getObject()
         if (!settings.savedCode) {
             settings.savedCode = {}
+            settings.savedCode[language] = {}
         }
-        settings.savedCode[language] = code
+        if (problemId) {
+            settings.savedCode[language][problemId] = code
+        } else {
+            settings.savedCode[language] = code            
+        }
         LocalStorage.set(SETTINGS_STORAGE, settings)
     }
 
-    getCode (language) {
+    getCode (language, problemId) {
         var savedCode = this.getObject().savedCode ? this.getObject().savedCode : null
         if (!savedCode) return null
-        return savedCode[language] ? savedCode[language] : null
+        if (problemId) {
+            return savedCode[language][problemId] ? savedCode[language][problemId] : null
+        } else {
+            return savedCode[language] ? savedCode[language] : null            
+        }
     }
 }
 
