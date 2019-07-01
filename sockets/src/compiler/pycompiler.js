@@ -46,6 +46,7 @@ class PyCompiler {
     }
 
     async test(functionDetails, code = '', filename = null) {
+        console.log(this._fileName)
         if (!filename) {
             filename = this._fileName
         }
@@ -59,7 +60,7 @@ class PyCompiler {
             var testZone = '';
             var listOfParameters = '';
             testZone += `fLength123abc=${functionDetails.tests.length};`
-            testZone += `currentTest123abc = 0;`
+            testZone += `currentTest123abc = 0;\n`
             for (var i = 0; i < functionDetails.tests.length; i++) {
                 listOfParameters = '';
                 for (var j = 0; j < functionDetails.tests[i].parameters.length; j++) {
@@ -70,14 +71,14 @@ class PyCompiler {
                     if (paramType.indexOf('*') > -1) {
                         var parameterArray = functionDetails.tests[i].parameters[j].replace('{', '[');
                         parameterArray = parameterArray.replace('}', ']');
-                        testZone += `param${i} = ${parameterArray};`
+                        testZone += `    param${i} = ${parameterArray};`
                         listOfParameters += `param${i}`
                     } else {
                         listOfParameters += `${functionDetails.tests[i].parameters[j]}`
                     }
                 }
                 //  testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${functionDetails.tests[i].parameters.join(',')});
-                testZone += `x${i} = ${functionDetails.name}(${listOfParameters});
+                testZone += `x${i} = ${functionDetails.name}(${listOfParameters})
     if ${functionDetails.tests[i].expectedResult} != x${i}:
         if currentTest123abc < (fLength123abc / 2):
             print("==========");
@@ -87,9 +88,10 @@ class PyCompiler {
             print("==========");
         else:
             print("Your code failed a hidden test: test${i + 1}\\n");
-        currentTest123abc+=1;`
+        currentTest123abc+=1;\n`
                 // printf("%d, %d\n", x${i}, ${functionDetails.tests[i].expectedResult});
                 // printf("%d == %d ? ", x${i}, ${functionDetails.tests[i].expectedResult});`
+                // from ${filename} import ${functionDetails.name}
             }
             var testCode = `from ${filename} import ${functionDetails.name}
 

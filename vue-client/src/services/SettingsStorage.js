@@ -37,6 +37,9 @@ class SettingsStorage {
             settings.savedCode = {}
             settings.savedCode[language] = {}
         }
+        if (!settings.savedCode[language]) {
+            settings.savedCode[language] = {}
+        }
         if (problemId) {
             settings.savedCode[language][problemId] = code
         } else {
@@ -49,6 +52,7 @@ class SettingsStorage {
         var savedCode = this.getObject().savedCode ? this.getObject().savedCode : null
         if (!savedCode) return null
         if (problemId) {
+            if (!savedCode[language]) return null
             return savedCode[language][problemId] ? savedCode[language][problemId] : null
         } else {
             return savedCode[language] ? savedCode[language] : null            

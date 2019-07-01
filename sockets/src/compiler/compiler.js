@@ -32,8 +32,10 @@ functionDetails = {
 
 class Compiler {
     constructor(fileName) {
-        fileName = fileName.replace('-', '');
-        fileName = fileName.replace('_', '');
+        while (fileName.indexOf('-') > -1 || fileName.indexOf('_') > -1) {
+            fileName = fileName.replace('-', '');
+            fileName = fileName.replace('_', '');
+        }
         this.cCompiler = new Ccompiler(fileName);
         this.pCompiler = new Pycompiler(fileName);
         this._fileName = fileName;

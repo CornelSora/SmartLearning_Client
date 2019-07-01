@@ -69,14 +69,14 @@ a {
 
 .dropdown-item:focus, .dropdown-item:hover {
   color: #fff !important;
-  background-color: #17a2b8;
+  background-color: #17a2b8 !important;
 }
 
 .page-item.active .page-link {
     z-index: 1;
     color: #fff !important;
-    background-color: #17a2b8;
-    border-color: #17a2b8;
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
 }
 /* .page-link {
   color: #17a2b8 !important;

@@ -127,7 +127,8 @@ export default {
       debugInfo: '',
       options: {
         enableBasicAutocompletion: true,
-        showGutter: true
+        showGutter: true,
+        tabSize: 2
       },
       marker: null,
       debugMode: false,
@@ -150,7 +151,6 @@ export default {
     }
   },
   mounted () {
-    console.warn(this.isReadonly)
     // if (this.$userID) {
     //   this.content = this.$api.problem.getUserSolution() ? this.$api.problem.getUserSolution() : ''
     //   this.functions = this.$api.problem.getProblemFunctions() ? this.$api.problem.getProblemFunctions() : {}
@@ -504,13 +504,14 @@ export default {
       this.content = (!this.content || this.content.indexOf(this.defaultMesage) > -1) ? this.setDefaultContent() : this.content
     },
     setDefaultContent() {
-      if (!this.isInvitation) {
+      if (!this.isInvitation && !this.loadedAlone) {
         var localCode = this.$settings.getCode(this.language, this.problemID)
+        console.log(localCode)
         if (localCode) {
           return localCode
         }
       }
-      if (this.language == 'c_cpp') {
+      if (this.language == 'c_cpp' && !this.loadedAlone) {
         var functionDetails = this.functions[0]
         var vars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
         var params = ''
@@ -529,9 +530,25 @@ ${functionDetails.returnType} ${functionDetails.name}(${params}) {
 int main() {
   
 }`
-        return code
+        return code ? code : "// Write your code here"
+      } else if (!this.loadedAlone) {
+        var functionDetails = this.functions[0]
+        var vars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
+        var params = ''
+        for (var i = 0; i < functionDetails.parameters.length; i++) {
+          if (i != functionDetails.parameters.length - 1) {
+            params += `${vars[i]}, `
+          } else {
+            params += `${vars[i]}`
+          }
+        }
+        var code = `def ${functionDetails.name}(${params}):
+  pass
+if __name__ == '__main__':
+  pass`
+        return code ? code : '# Write your code here'
       }
-      return '#Write your code here'
+      return this.language == 'python' ? '# Write your code here' : '// Write your code here'
     }
     // onBeautifyEvent () {
     //   console.warn(beautify)
@@ -541,6 +558,7 @@ int main() {
   watch: {
     language: function (newLanguage, oldLanguage) {
       this.content = this.setDefaultContent()
+      console.log(this.content)
       this.$settings.setLanguage(newLanguage)
     },
     theme: function (newTheme, oldTheme) {

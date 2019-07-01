@@ -1,7 +1,7 @@
 'use strict'
 module.exports = {
   NODE_ENV: '"production"',
-  SOCKET_SERVER: '"https://18.130.39.110"',
+  SOCKET_SERVER: '"https://secureapp-cornelsora.c9users.io/"',
   API_SERVER: '"https://smartlearningapi.azurewebsites.net/api"',
   FIREBASE_CONFIG: `{
     apiKey: "AIzaSyD4kytLYCKlLg97MdSyV43mbDEnB03a160",

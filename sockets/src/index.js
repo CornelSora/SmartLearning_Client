@@ -41,6 +41,6 @@ io.on('connection', function(socket) {
 
 // app.use(express.static(__dirname + '/public'));
 
-http.listen(8081, function(){
-    logger.info('App started: listening on http://localhost:8081');
+http.listen(3000, function(){
+    logger.info('App started: listening on http://localhost:3000');
 });
