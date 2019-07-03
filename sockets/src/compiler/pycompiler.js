@@ -78,7 +78,7 @@ class PyCompiler {
                     }
                 }
                 //  testZone += `${functionDetails.returnType} x${i} = ${functionDetails.name}(${functionDetails.tests[i].parameters.join(',')});
-                testZone += `x${i} = ${functionDetails.name}(${listOfParameters})
+                testZone += `   x${i} = ${functionDetails.name}(${listOfParameters})
     if ${functionDetails.tests[i].expectedResult} != x${i}:
         if currentTest123abc < (fLength123abc / 2):
             print("==========");

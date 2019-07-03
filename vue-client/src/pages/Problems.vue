@@ -64,7 +64,7 @@
         :sort-desc.sync="sortDesc"
         :sort-direction="sortDirection"
         @filtered="onFiltered"
-        style="width: 100%; border: 1px solid #dadadb; display: block;"
+        style="border: 1px solid #dadadb;"
       >
         <template slot="actions" slot-scope="row">
           <!-- We use @click.stop here to prevent a 'row-clicked' event from also happening -->
